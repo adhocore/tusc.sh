@@ -4,7 +4,11 @@
 [![Travis Build](https://img.shields.io/travis/com/adhocore/tusc.sh/master.svg?style=flat-square)](https://travis-ci.com/adhocore/tusc.sh?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-tusc is [TUS](https://tus.io) client protocol implementation for bash.
+`tusc` is [TUS](https://tus.io) client protocol implementation for bash.
+
+`tusc` lets you upload big files to servers supporting tus protocol right from your terminal.
+
+If anything goes wrong, you can rerun the command to resume upload from where it was left off.
 
 ## Installation
 
