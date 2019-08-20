@@ -43,3 +43,20 @@ usage()
 USAGE
   exit 0
 }
+
+# get/set tus config
+tus-config()
+{
+  TUSFILE=`realpath ~/.tus.json`
+  if [ ! -f $TUSFILE ]; then echo '{}' > $TUSFILE; fi
+  TUSJSON=`cat $TUSFILE`
+
+  if [[ $# -eq 0 ]]; then
+    echo $TUSJSON
+  elif [[ $# -eq 1 ]]; then
+    echo $TUSJSON | jq -r "$1"
+  else
+    echo $TUSJSON | jq "$1=\"$2\"" > $TUSFILE
+  fi
+}
+
