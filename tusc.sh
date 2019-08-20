@@ -97,7 +97,7 @@ request()
 # exit handler
 on-exit()
 {
-  rm -f $FILE.part
+  rm -f $FILE.part $HFILE
 
   OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
   if [[ $LEFTOVER -eq 0 ]]; then
@@ -135,19 +135,20 @@ SUMALGO=${SUMALGO:-sha1}
 FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
 
 [[ $DEBUG -eq 1 ]] && info "Host: $HOST | Header: $HFILE\nFile: $NAME | Size: $SIZE"
+
+# calc key &/or checksum
 [[ $DEBUG -eq 1 ]] && comment "Calculating key ..."
 KEY=`${SUMALGO}sum $FILE | awk '{ print $1 }'`
+CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
+[[ $DEBUG -eq 1 ]] && info "Key: $KEY | Checksum: $CHKSUM"
 
 # head request
 TUSURL=`tus-config ".[\"$KEY\"].location?"`
 [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
-# calc checksum
-CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
-
 if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
   OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
-  [[ $LEFTOVER -eq 0 ]] && ok "Already uploaded successfully!" && exit 0
+  [[ $LEFTOVER -eq 0 ]] && exit 0
   [[ $DEBUG -eq 1 ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
   FILEPART=`filepart $OFFSET $LEFTOVER $FILE`
 # create request
