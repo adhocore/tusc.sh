@@ -60,3 +60,11 @@ tus-config()
   fi
 }
 
+# create a part of file
+filepart() # $1 = start_byte, $2 = byte_length, $3 = file
+{
+  dd bs=32M skip="$1" count="$2" iflag=skip_bytes ${3:+if="$3"} of="$3.part" > /dev/null 2>&1
+
+  echo `realpath $3.part`
+}
+
