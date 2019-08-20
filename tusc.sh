@@ -116,3 +116,31 @@ SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo not supported" 1
 
 FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
+
+[[ $DEBUG -eq 1 ]] && info "Host: $HOST | Header: $HFILE\nFile: $NAME | Size: $SIZE"
+[[ $DEBUG -eq 1 ]] && comment "Calculating key ..."
+KEY=`${SUMALGO}sum $FILE | awk '{ print $1 }'`
+
+# head request
+TUSURL=`tus-config ".[\"$KEY\"].location?"`
+[[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
+
+# calc checksum
+CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
+
+if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
+  OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
+  [[ $LEFTOVER -eq 0 ]] && ok "Already uploaded successfully!" && exit 0
+  [[ $DEBUG -eq 1 ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
+  FILEPART=`filepart $OFFSET $LEFTOVER $FILE`
+# create request
+else
+  OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
+  request "-H 'Upload-Length: $SIZE' \
+    -H 'Upload-Key: $KEY' \
+    -H 'Upload-Checksum: $CHKSUM' \
+    -H 'Upload-Metadata: filename $(echo -n $NAME | base64 -w 0)' \
+    -X POST $HOST${BASEPATH:-/files/}"
+
+  TUSURL=${HEADERS[Location]}
+fi
