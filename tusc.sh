@@ -11,6 +11,9 @@
 FULL=`readlink -f $0` # fullpath
 TUSC=`basename $0`    # name
 
+declare -A HEADERS    # assoc headers of last request
+declare ISOK=0        # is last request ok?
+
 # message helpers
 line() { echo -e "\e[${3:-0};$2m$1\e[0m"; }
 error() { line "$1" 31; if [[ ! ${2:-0} -eq 0 ]]; then exit $2; fi }
@@ -68,8 +71,26 @@ filepart() # $1 = start_byte, $2 = byte_length, $3 = file
   echo `realpath $3.part`
 }
 
-declare -A HEADERS  # assoc headers of last request
-declare ISOK=0      # is last request ok
+# http request
+request()
+{
+  echo > $HFILE
+  [[ $DEBUG -eq 1 ]] && comment "> curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1"
+  BODY=$(bash -c "curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1")
+  HEADERS=()
+
+  while IFS=':' read key value; do
+    if [[ "${key:0:5}" == "HTTP/" ]]; then
+      value=$(echo "$key" | grep -Eo '[0-9]{3}') key=Status
+    fi
+    value="${value/ /}"
+    HEADERS[$key]="${value%$'\r'}"
+  done < <(cat "$HFILE")
+
+  if [[ "${HEADERS[Status]}" == "20"* ]]; then ISOK=1; else ISOK=0; fi
+
+  if [[ $ISOK -eq 0 ]] && [[ "$1" != *"--head"* ]]; then error "$BODY" 1; fi
+}
 
 # argv parsing
 while [[ $# -gt 0 ]]; do
@@ -95,4 +116,3 @@ SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo not supported" 1
 
 FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
-
