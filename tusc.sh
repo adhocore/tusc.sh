@@ -87,3 +87,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+[[ $HOST ]] || error "--host required" 1
+[[ $FILE ]] || error "--file required" 1
+[[ -f $FILE ]] || error "--file doesnt exist" 1
+
+SUMALGO=${SUMALGO:-sha1}
+[[ $SUMALGO == "sha"* ]] || error "--algo not supported" 1
+
+FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
+
