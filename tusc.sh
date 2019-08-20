@@ -161,10 +161,10 @@ else
     -X POST $HOST${BASEPATH:-/files/}"
 
   TUSURL=${HEADERS[Location]}
-fi
 
-# save location config
-tus-config ".[\"$KEY\"].location" "$TUSURL"
+  # save location config
+  tus-config ".[\"$KEY\"].location" "$TUSURL"
+fi
 
 # patch request
 request "-H 'Content-Type: application/offset+octet-stream' \
