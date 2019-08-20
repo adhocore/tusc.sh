@@ -42,9 +42,10 @@ usage()
     $(info "-h --help")      $(comment "Show help information and usage.")
     $(info "-H --host")      $(comment "The tus-server host where file is uploaded.")
   $(ok Examples:)
-    $TUSC
-    $TUSC version             $(comment "# prints current version of itself")
-    $TUSC --help              $(comment "# shows this help")
+    $TUSC version                 # prints current version of itself
+    $TUSC --help                  # shows this help
+    $TUSC 0:1080 ww.mp4           # uploads ww.mp4 to http://0.0.0.0:1080
+    $TUSC -f ww.mp4 -H 0:1080     # same as above
 USAGE
 }
 
