@@ -94,6 +94,21 @@ request()
   if [[ $ISOK -eq 0 ]] && [[ "$1" != *"--head"* ]]; then error "$BODY" 1; fi
 }
 
+# exit handler
+on-exit()
+{
+  rm -f $FILE.part
+
+  OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
+  if [[ $LEFTOVER -eq 0 ]]; then
+    ok "Uploaded successfully!"
+  else
+    info "Unfinished upload, please rerun the command to resume"
+  fi
+}
+
+trap on-exit EXIT
+
 # argv parsing
 while [[ $# -gt 0 ]]; do
   case "$1" in
