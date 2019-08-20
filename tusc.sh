@@ -8,6 +8,8 @@
 # Be sure to check readme doc at https://github.com/adhocore/bash-tus
 #
 
+if [[ -f ~/.tus.dbg ]]; then set -ex; else set -e; fi
+
 FULL=`readlink -f $0` # fullpath
 TUSC=`basename $0`    # name
 
