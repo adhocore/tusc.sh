@@ -68,3 +68,22 @@ filepart() # $1 = start_byte, $2 = byte_length, $3 = file
   echo `realpath $3.part`
 }
 
+declare -A HEADERS  # assoc headers of last request
+declare ISOK=0      # is last request ok
+
+# argv parsing
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -a | --algo) SUMALGO="$2"sum; shift 2 ;;
+    -b | --base-path) BASEPATH="$2"; shift 2 ;;
+    -f | --file) FILE="$2"; shift 2 ;;
+    -h | --help | help) usage $1 ;;
+    -H | --host) HOST="$2"; shift 2 ;;
+    version) version; exit 0 ;;
+    *) if [[ $HOST ]]; then
+        if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}sum"; else FILE="$1"; fi
+      else HOST=$1; fi
+      shift ;;
+  esac
+done
+
