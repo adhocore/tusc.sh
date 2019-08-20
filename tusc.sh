@@ -46,7 +46,6 @@ usage()
     $TUSC version             $(comment "# prints current version of itself")
     $TUSC --help              $(comment "# shows this help")
 USAGE
-  exit 0
 }
 
 # get/set tus config
@@ -98,12 +97,13 @@ request()
 on-exit()
 {
   rm -f $FILE.part $HFILE
+  [[ $CHKSUM ]] || return 0
 
   OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
   if [[ $LEFTOVER -eq 0 ]]; then
     ok "Uploaded successfully!"
   else
-    info "Unfinished upload, please rerun the command to resume"
+    info "Unfinished upload, please rerun the command to resume."
   fi
 }
 
@@ -115,9 +115,9 @@ while [[ $# -gt 0 ]]; do
     -a | --algo) SUMALGO="$2"sum; shift 2 ;;
     -b | --base-path) BASEPATH="$2"; shift 2 ;;
     -f | --file) FILE="$2"; shift 2 ;;
-    -h | --help | help) usage $1 ;;
+    -h | --help | help) usage $1; exit 0 ;;
     -H | --host) HOST="$2"; shift 2 ;;
-    version) version; exit 0 ;;
+         --version | version) version; exit 0 ;;
     *) if [[ $HOST ]]; then
         if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}sum"; else FILE="$1"; fi
       else HOST=$1; fi
