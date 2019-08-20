@@ -144,3 +144,14 @@ else
 
   TUSURL=${HEADERS[Location]}
 fi
+
+# save location config
+tus-config ".[\"$KEY\"].location" "$TUSURL"
+
+# patch request
+request "-H 'Content-Type: application/offset+octet-stream' \
+  -H 'Content-Length: $LEFTOVER' \
+  -H 'Upload-Checksum: $CHKSUM' \
+  -H 'Upload-Offset: $OFFSET' \
+  --data-binary '@$FILEPART' \
+  --request PATCH $TUSURL"
