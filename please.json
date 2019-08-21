@@ -1,0 +1,3 @@
+{
+  "before-push": "sed -ie 's/echo v.*;/echo v{NEXT_VERSION};/' ./tusc.sh; git add ./tusc.sh"
+}
