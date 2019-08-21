@@ -64,3 +64,30 @@ To revert the above step, just remove the debug file:
 ```sh
 rm ~/.tus.dbg
 ```
+
+## Trying Out
+
+To get hands on in local machine, you can install [tusd](https://github.com/tus/tusd#download-pre-builts-binaries-recommended) server.
+
+Then,
+```sh
+# run tusd server (http://0.0.0.0:1080)
+tusd -dir ~/.tusd-data &
+
+# start uploading large files
+DEBUG=1 tusc --host 0:1080 --file /full/path/to/large/file
+```
+
+While upload is in progress, you can force abort it using `Ctrl+C`.
+
+> Then resume upload again:
+```sh
+DEBUG=1 tusc --host 0:1080 --file /full/path/to/large/file
+```
+
+It should start from where it last stopped.
+
+> You can check the uploaded files like so:
+```sh
+ls -al ~/.tusd-data
+```
