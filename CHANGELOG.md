@@ -1,3 +1,16 @@
+## [0.1.1](https://github.com/adhocore/tusc.sh/releases/tag/0.1.1) (2019-08-21)
+
+### Bug Fixes
+- Algo name, missing option, examples (Jitendra Adhikari) [_6dcd5ae_](https://github.com/adhocore/tusc.sh/commit/6dcd5ae)
+
+### Documentations
+- Update usage + examples (Jitendra Adhikari) [_9a8299d_](https://github.com/adhocore/tusc.sh/commit/9a8299d)
+- Add more intro (Jitendra Adhikari) [_8ebc663_](https://github.com/adhocore/tusc.sh/commit/8ebc663)
+
+### Miscellaneous
+- Add please.json with before-push hook (Jitendra Adhikari) [_b81bdab_](https://github.com/adhocore/tusc.sh/commit/b81bdab)
+
+
 ## [0.1.0](https://github.com/adhocore/tusc.sh/releases/tag/0.1.0) (2019-08-20)
 
 ### Features
@@ -23,6 +36,3 @@
 
 ### Miscellaneous
 - Update usage examples (Jitendra Adhikari) [_993dafb_](https://github.com/adhocore/tusc.sh/commit/993dafb)
-
-
-
