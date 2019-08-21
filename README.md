@@ -24,22 +24,28 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
 ## Usage and Examples
 
 ```
-  tusc v0.0.1 | (c) Jitendra Adhikari
+  tusc v0.1.1 | (c) Jitendra Adhikari
   tusc is bash implementation of tus-client (https://tus.io).
+
   Usage:
     tusc <--options>
     tusc <host> <file> [algo]
+
   Options:
     -a --algo      The algorigthm for key &/or checksum.
                    (Eg: sha1, sha256)
+    -b --base-path The tus-server base path (Default: '/files/').
     -f --file      The file to upload.
     -h --help      Show help information and usage.
     -H --host      The tus-server host where file is uploaded.
+
   Examples:
-    tusc version                 # prints current version of itself
-    tusc --help                  # shows this help
-    tusc 0:1080 ww.mp4           # uploads ww.mp4 to http://0.0.0.0:1080
-    tusc -f ww.mp4 -H 0:1080     # same as above
+    tusc --help                           # shows this help
+    tusc --version                        # prints current version of itself
+    tusc    0:1080    ww.mp4              # uploads ww.mp4 to http://0.0.0.0:1080/files/
+    tusc -H 0:1080 -f ww.mp4              # same as above
+    tusc -H 0:1080 -f ww.mp4 -a sha256    # same as above but uses sha256 algo for key/checksum
+    tusc -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
 ```
 
 ### Debugging
