@@ -5,7 +5,7 @@
 # Author:
 #   Jitendra Adhikari <jiten.adhikary@gmail.com>
 #
-# Be sure to check readme doc at https://github.com/adhocore/bash-tus
+# Be sure to check readme doc at https://github.com/adhocore/tusc.sh
 #
 
 if [[ -f ~/.tus.dbg ]]; then set -ex; else set -e; fi
@@ -32,20 +32,26 @@ usage()
   cat << USAGE
   $TUSC $(info `version`) | $(ok "(c) Jitendra Adhikari")
   $TUSC is bash implementation of tus-client (https://tus.io).
+
   $(ok Usage:)
     $TUSC <--options>
     $TUSC <host> <file> [algo]
+
   $(ok Options:)
     $(info "-a --algo")      $(comment "The algorigthm for key &/or checksum.")
                    $(comment "(Eg: sha1, sha256)")
+    $(info "-b --base-path") $(comment "The tus-server base path (Default: '/files/').")
     $(info "-f --file")      $(comment "The file to upload.")
     $(info "-h --help")      $(comment "Show help information and usage.")
     $(info "-H --host")      $(comment "The tus-server host where file is uploaded.")
+
   $(ok Examples:)
-    $TUSC version                 # prints current version of itself
-    $TUSC --help                  # shows this help
-    $TUSC 0:1080 ww.mp4           # uploads ww.mp4 to http://0.0.0.0:1080
-    $TUSC -f ww.mp4 -H 0:1080     # same as above
+    $TUSC --help                           # shows this help
+    $TUSC --version                        # prints current version of itself
+    $TUSC    0:1080    ww.mp4              # uploads ww.mp4 to http://0.0.0.0:1080/files/
+    $TUSC -H 0:1080 -f ww.mp4              # same as above
+    $TUSC -H 0:1080 -f ww.mp4 -a sha256    # same as above but uses sha256 algo for key/checksum
+    $TUSC -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
 USAGE
 }
 
@@ -113,14 +119,14 @@ trap on-exit EXIT
 # argv parsing
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -a | --algo) SUMALGO="$2"sum; shift 2 ;;
+    -a | --algo) SUMALGO="$2"; shift 2 ;;
     -b | --base-path) BASEPATH="$2"; shift 2 ;;
     -f | --file) FILE="$2"; shift 2 ;;
     -h | --help | help) usage $1; exit 0 ;;
     -H | --host) HOST="$2"; shift 2 ;;
          --version | version) version; exit 0 ;;
     *) if [[ $HOST ]]; then
-        if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}sum"; else FILE="$1"; fi
+        if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}"; else FILE="$1"; fi
       else HOST=$1; fi
       shift ;;
   esac
