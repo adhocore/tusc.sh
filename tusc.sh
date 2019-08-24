@@ -170,7 +170,7 @@ CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
 
 # head request
 TUSURL=`tus-config ".[\"$KEY\"].location?"`
-[[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; exit $?
+[[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; [[ $LOCATE ]] && exit $?
 [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
 if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
