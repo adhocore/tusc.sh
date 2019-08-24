@@ -38,6 +38,7 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
     -f --file      The file to upload.
     -h --help      Show help information and usage.
     -H --host      The tus-server host where file is uploaded.
+    -L --locate    Locate the uploaded file in tus-server.
     -u --update    Update tusc to latest version.
 
   Examples:
