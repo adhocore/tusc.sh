@@ -72,7 +72,7 @@ USAGE
 }
 
 # get/set tus config
-tus-config()
+tus-config() # $1 = key, $2 = value
 {
   TUSFILE=`realpath ~/.tus.json`
   if [ ! -f $TUSFILE ]; then echo '{}' > $TUSFILE; fi
@@ -120,14 +120,15 @@ request()
 on-exit()
 {
   rm -f $FILE.part $HFILE
-  [[ $CHKSUM ]] || return 0
+  [[ $OFFSET ]] || return 0
 
   OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
   if [[ $LEFTOVER -eq 0 ]]; then
     ok "Uploaded successfully!"
   else
-    info "Unfinished upload, please rerun the command to resume."
+    error "Unfinished upload, please rerun the command to resume."
   fi
+  info "URL: $TUSURL"
 }
 
 # argv parsing
@@ -138,6 +139,7 @@ while [[ $# -gt 0 ]]; do
     -f | --file) FILE="$2"; shift 2 ;;
     -h | --help | help) usage $1; exit 0 ;;
     -H | --host) HOST="$2"; shift 2 ;;
+    locate) LOCATE=1; shift ;;
     -u | --update) update; exit 0 ;;
          --version | version) version; exit 0 ;;
     *) if [[ $HOST ]]; then
@@ -149,15 +151,14 @@ done
 
 trap on-exit EXIT
 
-[[ $HOST ]] || error "--host required" 1
+[[ $HOST ]] || [[ $LOCATE ]] || error "--host required" 1
 [[ $FILE ]] || error "--file required" 1
 [[ -f $FILE ]] || error "--file doesnt exist" 1
 
 SUMALGO=${SUMALGO:-sha1}
-[[ $SUMALGO == "sha"* ]] || error "--algo not supported" 1
+[[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
 
 FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
-
 [[ $DEBUG -eq 1 ]] && info "Host: $HOST | Header: $HFILE\nFile: $NAME | Size: $SIZE"
 
 # calc key &/or checksum
@@ -168,6 +169,7 @@ CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
 
 # head request
 TUSURL=`tus-config ".[\"$KEY\"].location?"`
+[[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; exit $?
 [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
 if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
