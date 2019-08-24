@@ -1,3 +1,13 @@
+## [0.2.0](https://github.com/adhocore/tusc.sh/releases/tag/0.2.0) (2019-08-24)
+
+### Features
+- Add tusc --update (Jitendra Adhikari) [_a4d74f8_](https://github.com/adhocore/tusc.sh/commit/a4d74f8)
+
+### Documentations
+- Add --update closes #2 (Jitendra Adhikari) [_17a5ebf_](https://github.com/adhocore/tusc.sh/commit/17a5ebf)
+- Add trying out section (Jitendra Adhikari) [_df774b7_](https://github.com/adhocore/tusc.sh/commit/df774b7)
+
+
 ## [0.1.1](https://github.com/adhocore/tusc.sh/releases/tag/0.1.1) (2019-08-21)
 
 ### Bug Fixes
