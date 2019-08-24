@@ -38,9 +38,11 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
     -f --file      The file to upload.
     -h --help      Show help information and usage.
     -H --host      The tus-server host where file is uploaded.
+    -u --update    Update tusc to latest version.
 
   Examples:
     tusc --help                           # shows this help
+    tusc --update                         # updates itself
     tusc --version                        # prints current version of itself
     tusc    0:1080    ww.mp4              # uploads ww.mp4 to http://0.0.0.0:1080/files/
     tusc -H 0:1080 -f ww.mp4              # same as above
@@ -72,7 +74,7 @@ To get hands on in local machine, you can install [tusd](https://github.com/tus/
 Then,
 ```sh
 # run tusd server (http://0.0.0.0:1080)
-tusd -dir ~/.tusd-data &
+tusd -dir ~/.tusd-data > /dev/null 2>&1 &
 
 # start uploading large files
 DEBUG=1 tusc --host 0:1080 --file /full/path/to/large/file
