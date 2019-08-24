@@ -1,3 +1,16 @@
+## [0.3.1](https://github.com/adhocore/tusc.sh/releases/tag/0.3.1) (2019-08-24)
+
+### Bug Fixes
+- Exit when we are done with location (Jitendra Adhikari) [_fe2edd1_](https://github.com/adhocore/tusc.sh/commit/fe2edd1)
+
+### Internal Refactors
+- Use read instead of awk (Jitendra Adhikari) [_525dcfc_](https://github.com/adhocore/tusc.sh/commit/525dcfc)
+
+### Documentations
+- Remove awk (Jitendra Adhikari) [_e453044_](https://github.com/adhocore/tusc.sh/commit/e453044)
+- Add system requirements (Jitendra Adhikari) [_a0afe5c_](https://github.com/adhocore/tusc.sh/commit/a0afe5c)
+
+
 ## [0.3.0](https://github.com/adhocore/tusc.sh/releases/tag/0.3.0) (2019-08-24)
 
 ### Features
