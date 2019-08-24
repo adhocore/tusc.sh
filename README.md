@@ -22,7 +22,6 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
 ```
 
 #### System Requirements
-- awk
 - curl
 - dd
 - sha1sum/sha256sum
