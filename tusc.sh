@@ -164,7 +164,7 @@ FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktem
 
 # calc key &/or checksum
 [[ $DEBUG -eq 1 ]] && comment "Calculating key ..."
-KEY=`${SUMALGO}sum $FILE | awk '{ print $1 }'`
+read -r KEY _ <<< `${SUMALGO}sum $FILE`
 CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
 [[ $DEBUG -eq 1 ]] && info "Key: $KEY | Checksum: $CHKSUM"
 
