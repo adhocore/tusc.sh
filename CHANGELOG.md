@@ -1,3 +1,15 @@
+## [0.3.0](https://github.com/adhocore/tusc.sh/releases/tag/0.3.0) (2019-08-24)
+
+### Features
+- Add locate command, show location when finished (Jitendra Adhikari) [_ee91ad0_](https://github.com/adhocore/tusc.sh/commit/ee91ad0)
+
+### Internal Refactors
+- Use --locate and -L instead of locate (Jitendra Adhikari) [_f069d20_](https://github.com/adhocore/tusc.sh/commit/f069d20)
+
+### Documentations
+- Add --locate (Jitendra Adhikari) [_a9538ff_](https://github.com/adhocore/tusc.sh/commit/a9538ff)
+
+
 ## [0.2.0](https://github.com/adhocore/tusc.sh/releases/tag/0.2.0) (2019-08-24)
 
 ### Features
