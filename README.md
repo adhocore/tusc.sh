@@ -21,6 +21,12 @@ curl -sSLo ~/tusc https://raw.githubusercontent.com/adhocore/tusc.sh/master/tusc
 chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
 ```
 
+#### System Requirements
+- awk
+- curl
+- dd
+- sha1sum/sha256sum
+
 ## Usage and Examples
 
 ```
