@@ -58,6 +58,7 @@ usage()
     $(info "-f --file")      $(comment "The file to upload.")
     $(info "-h --help")      $(comment "Show help information and usage.")
     $(info "-H --host")      $(comment "The tus-server host where file is uploaded.")
+    $(info "-L --locate")    $(comment "Locate the uploaded file in tus-server.")
     $(info "-u --update")    $(comment "Update tusc to latest version.")
 
   $(ok Examples:)
@@ -139,7 +140,7 @@ while [[ $# -gt 0 ]]; do
     -f | --file) FILE="$2"; shift 2 ;;
     -h | --help | help) usage $1; exit 0 ;;
     -H | --host) HOST="$2"; shift 2 ;;
-    locate) LOCATE=1; shift ;;
+    -L | --locate) LOCATE=1; shift ;;
     -u | --update) update; exit 0 ;;
          --version | version) version; exit 0 ;;
     *) if [[ $HOST ]]; then
