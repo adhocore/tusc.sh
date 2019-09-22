@@ -10,6 +10,8 @@
 
 If anything goes wrong, you can rerun the command to resume upload from where it was left off.
 
+> **Fun Fact**: Git LFS also supports tus.io protocol.
+
 ## Installation
 
 ```sh
