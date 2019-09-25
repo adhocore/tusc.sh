@@ -10,8 +10,7 @@
 
 if [[ -f ~/.tus.dbg ]]; then set -ex; else set -e; fi
 
-FULL=`readlink -f $0` # fullpath
-TUSC=`basename $0`    # name
+FULL=$(readlink -f $0) TUSC=$(basename $0) SPINID=0
 
 declare -A HEADERS    # assoc headers of last request
 declare ISOK=0        # is last request ok?
@@ -100,7 +99,7 @@ filepart() # $1 = start_byte, $2 = byte_length, $3 = file
 request()
 {
   echo > $HFILE
-  [[ $DEBUG -eq 1 ]] && comment "> curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1"
+  [[ $DEBUG ]] && comment "> curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1"
   BODY=$(bash -c "curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1")
   HEADERS=()
 
@@ -117,10 +116,37 @@ request()
   if [[ $ISOK -eq 0 ]] && [[ "$1" != *"--head"* ]]; then error "$BODY" 1; fi
 }
 
+# show spinner and mark its pid
+spinner()
+{
+  do-spin &
+  SPINID=$!
+  disown
+}
+
+# do spin (credits: https://www.shellscript.sh/tips/spinner/)
+do-spin()
+{
+  local chars="+/|\\-+/|\\-"
+  while :; do
+    for i in `seq 0 9`; do
+      echo -n "${chars:$i:1}" && echo -en "\010" && sleep 0.1
+    done
+  done
+}
+
+no-spinner()
+{
+  local PID=$SPINID
+  SPINID=0
+  [[ $PID -eq 0 ]] || kill $PID 2> /dev/null
+}
+
 # exit handler
 on-exit()
 {
-  rm -f $FILE.part $HFILE
+  no-spinner
+  rm -f $FILE.part $HFILE0 $HFILE
   [[ $OFFSET ]] || return 0
 
   OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
@@ -160,13 +186,14 @@ SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
 
 FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
-[[ $DEBUG -eq 1 ]] && info "Host: $HOST | Header: $HFILE\nFile: $NAME | Size: $SIZE"
+[[ $DEBUG ]] && info "Host: $HOST | Header: $HFILE\nFile: $NAME | Size: $SIZE"
 
 # calc key &/or checksum
-[[ $DEBUG -eq 1 ]] && comment "Calculating key ..."
-read -r KEY _ <<< `${SUMALGO}sum $FILE`
+[[ $DEBUG ]] && comment "Calculating key ..."
+spinner && read -r KEY _ <<< `${SUMALGO}sum $FILE` && no-spinner
+
 CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
-[[ $DEBUG -eq 1 ]] && info "Key: $KEY | Checksum: $CHKSUM"
+[[ $DEBUG ]] && info "Key: $KEY | Checksum: $CHKSUM"
 
 # head request
 TUSURL=`tus-config ".[\"$KEY\"].location?"`
@@ -176,8 +203,9 @@ TUSURL=`tus-config ".[\"$KEY\"].location?"`
 if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
   OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
   [[ $LEFTOVER -eq 0 ]] && exit 0
-  [[ $DEBUG -eq 1 ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
-  FILEPART=`filepart $OFFSET $LEFTOVER $FILE`
+  [[ $DEBUG ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
+  spinner && FILEPART=`filepart $OFFSET $LEFTOVER $FILE` && no-spinner
+
 # create request
 else
   OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
@@ -199,4 +227,13 @@ request "-H 'Content-Type: application/offset+octet-stream' \
   -H 'Upload-Checksum: $CHKSUM' \
   -H 'Upload-Offset: $OFFSET' \
   --data-binary '@$FILEPART' \
-  --request PATCH $TUSURL"
+  --request PATCH $TUSURL" &
+
+# show spinner
+spinner
+HFILE0=$HFILE HFILE=`mktemp -t tus.XXXXXXXXXX`
+while :; do
+  [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
+  request "--head $TUSURL" > /dev/null
+  [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] || sleep 2
+done
