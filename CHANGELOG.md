@@ -1,3 +1,15 @@
+## [0.4.0](https://github.com/adhocore/tusc.sh/releases/tag/0.4.0) (2019-09-25)
+
+### Features
+- Show spinner on slower subtasks (Jitendra Adhikari) [_832acaa_](https://github.com/adhocore/tusc.sh/commit/832acaa)
+
+### Documentations
+- On git lfs (Jitendra Adhikari) [_0a389a8_](https://github.com/adhocore/tusc.sh/commit/0a389a8)
+
+### Miscellaneous
+- Remove -i suffix for sed (Jitendra Adhikari) [_822cf7b_](https://github.com/adhocore/tusc.sh/commit/822cf7b)
+
+
 ## [0.3.1](https://github.com/adhocore/tusc.sh/releases/tag/0.3.1) (2019-08-24)
 
 ### Bug Fixes
