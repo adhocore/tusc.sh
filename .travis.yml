@@ -9,13 +9,12 @@ install:
   - tar xzf tusd_linux_amd64.tar.gz
 
 before_script:
-  - chmod +x tusc.sh
-  - chmod +x tusd_linux_amd64/tusd
+  - chmod +x ./tusc.sh && bash -n ./tusc.sh
+  - chmod +x ./tusd_linux_amd64/tusd
 
 script:
-  - bash -n ./tusc.sh
-  - 'tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
+  - './tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
   - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/'
-  - 'URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L)'
-  - 'wget $(echo $URL | grep -o -E "http://[a-z0-9\.\:\/]+") -O tusd_linux_amd64.tar.gz1'
+  - 'URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L -C -S | cut -c 6-999)'
+  - 'wget $URL -O tusd_linux_amd64.tar.gz1'
   - '[[ "$(md5sum tusd_linux_amd64.tar.gz1)" == "$(md5sum tusd_linux_amd64.tar.gz)1" ]] || exit 1'
