@@ -16,14 +16,14 @@ declare -A HEADERS    # assoc headers of last request
 declare ISOK=0        # is last request ok?
 
 # message helpers
-line() { echo -e "\e[${3:-0};$2m$1\e[0m"; }
+line() { [[ $NOCOLOR ]] && echo -e "$1" || echo -e "\e[${3:-0};$2m$1\e[0m"; }
 error() { line "$1" 31; if [[ ! ${2:-0} -eq 0 ]]; then exit $2; fi }
 ok() { line "${1:-  Done}" 32; }
 info() { line "$1" 33; }
 comment() { line "$1" 30 1; }
 
 # show version
-version() { echo v0.4.0; }
+version() { echo v0.5.0; }
 
 # update tusc
 update()
@@ -55,11 +55,14 @@ usage()
                    $(comment "(Eg: sha1, sha256)")
     $(info "-b --base-path") $(comment "The tus-server base path (Default: '/files/').")
     $(info "-c --creds")     $(comment "File with credentials, user and pass")
+    $(info "-C --no-color")  $(comment "Donot color the output (Useful for parsing output).")
     $(info "-f --file")      $(comment "The file to upload.")
     $(info "-h --help")      $(comment "Show help information and usage.")
     $(info "-H --host")      $(comment "The tus-server host where file is uploaded.")
     $(info "-L --locate")    $(comment "Locate the uploaded file in tus-server.")
+    $(info "-S --no-spin")   $(comment "Donot show the spinner (Useful for parsing output).")
     $(info "-u --update")    $(comment "Update tusc to latest version.")
+    $(info "   --version")   $(comment "Print the current tusc version.")
 
   $(ok Examples:)
     $TUSC --help                           # shows this help
@@ -103,12 +106,12 @@ filepart() # $1 = start_byte, $2 = byte_length, $3 = file
 # http request
 request()
 {
-  echo > $HFILE
-  [[ $DEBUG ]] && comment "> curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1"
+  echo > $HEADER
+  [[ $DEBUG ]] && comment "> curl -sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1"
 
   USERPASS=""
   [[ x"${USER}" != x"" ]] && USERPASS="--basic -u '${USER}:${PASS}'"
-  BODY=$(bash -c "curl ${USERPASS} -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1")
+  BODY=$(bash -c "curl ${USERPASS} -sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1")
   HEADERS=()
 
   while IFS=':' read key value; do
@@ -117,7 +120,7 @@ request()
     fi
     value="${value/ /}"
     HEADERS[$key]="${value%$'\r'}"
-  done < <(cat "$HFILE")
+  done < <(cat "$HEADER")
 
   if [[ "${HEADERS[Status]}" == "20"* ]]; then ISOK=1; else ISOK=0; fi
 
@@ -127,6 +130,7 @@ request()
 # show spinner and mark its pid
 spinner()
 {
+  [[ $NOSPIN ]] && return 0
   do-spin &
   SPINID=$!
   disown
@@ -145,6 +149,7 @@ do-spin()
 
 no-spinner()
 {
+  [[ $NOSPIN ]] && return 0
   local PID=$SPINID
   SPINID=0
   [[ $PID -eq 0 ]] || kill $PID 2> /dev/null
@@ -154,14 +159,14 @@ no-spinner()
 on-exit()
 {
   no-spinner
-  rm -f $FILE.part $HFILE0 $HFILE
+  rm -f $FILE.part $HEADER0 $HEADER
   [[ $OFFSET ]] || return 0
 
   OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
   if [[ $LEFTOVER -eq 0 ]]; then
-    ok "Uploaded successfully!"
+    ok "✔ Uploaded successfully!"
   else
-    error "Unfinished upload, please rerun the command to resume."
+    error "✖ Unfinished upload, please rerun the command to resume."
   fi
   info "URL: $TUSURL"
 }
@@ -172,10 +177,12 @@ while [[ $# -gt 0 ]]; do
     -a | --algo) SUMALGO="$2"; shift 2 ;;
     -b | --base-path) BASEPATH="$2"; shift 2 ;;
     -c | --CREDS) CREDS="$2"; shift 2 ;;
+    -C | --no-color) NOCOLOR=1; shift ;;
     -f | --file) FILE="$2"; shift 2 ;;
     -h | --help | help) usage $1; exit 0 ;;
     -H | --host) HOST="$2"; shift 2 ;;
     -L | --locate) LOCATE=1; shift ;;
+    -S | --no-spin) NOSPIN=1; shift ;;
     -u | --update) update; exit 0 ;;
          --version | version) version; exit 0 ;;
     *) if [[ $HOST ]]; then
@@ -200,15 +207,14 @@ fi
 SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
 
-FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HFILE=`mktemp -t tus.XXXXXXXXXX`
-[[ $DEBUG ]] && info "Host: $HOST | Header: $HFILE\nFile: $NAME | Size: $SIZE"
+FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HEADER=`mktemp -t tus.XXXXXXXXXX`
 
 # calc key &/or checksum
-[[ $DEBUG ]] && comment "Calculating key ..."
+[[ $DEBUG ]] && comment "> ${SUMALGO}sum $FILE"
 spinner && read -r KEY _ <<< `${SUMALGO}sum $FILE` && no-spinner
 
 CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
-[[ $DEBUG ]] && info "Key: $KEY | Checksum: $CHKSUM"
+[[ $DEBUG ]] && info "HOST  : $HOST\nHEADER: $HEADER\nFILE  : $NAME\nSIZE  : $SIZE\nKEY   : $KEY\nCHKSUM: $CHKSUM"
 
 # head request
 TUSURL=`tus-config ".[\"$KEY\"].location?"`
@@ -253,7 +259,7 @@ request "-H 'Content-Type: application/offset+octet-stream' \
 
 # show spinner
 spinner
-HFILE0=$HFILE HFILE=`mktemp -t tus.XXXXXXXXXX`
+HEADER0=$HEADER HEADER=`mktemp -t tus.XXXXXXXXXX`
 while :; do
   [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
   request "--head $TUSURL" > /dev/null
