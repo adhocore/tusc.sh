@@ -1,3 +1,12 @@
+## [0.5.0](https://github.com/adhocore/tusc.sh/releases/tag/0.5.0) (2019-09-26)
+
+### Features
+- **Tusc**: Add --no-spin, --no-color and rename vars (Jitendra Adhikari) [_f01c605_](https://github.com/adhocore/tusc.sh/commit/f01c605)
+
+### Documentations
+- Update help and usage, add preview (Jitendra Adhikari) [_e160ad9_](https://github.com/adhocore/tusc.sh/commit/e160ad9)
+
+
 ## [0.4.0](https://github.com/adhocore/tusc.sh/releases/tag/0.4.0) (2019-09-25)
 
 ### Features
