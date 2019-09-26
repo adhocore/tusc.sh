@@ -176,7 +176,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -a | --algo) SUMALGO="$2"; shift 2 ;;
     -b | --base-path) BASEPATH="$2"; shift 2 ;;
-    -c | --CREDS) CREDS="$2"; shift 2 ;;
+    -c | --creds) CREDS="$2"; shift 2 ;;
     -C | --no-color) NOCOLOR=1; shift ;;
     -f | --file) FILE="$2"; shift 2 ;;
     -h | --help | help) usage $1; exit 0 ;;
