@@ -23,15 +23,15 @@ curl -sSLo ~/tusc https://raw.githubusercontent.com/adhocore/tusc.sh/master/tusc
 chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
 ```
 
-#### System Requirements
-- curl
-- dd
-- sha1sum/sha256sum
+### System Requirements
+- `curl`
+- `dd`
+- `sha1sum`/`sha256sum`
+
 
 ## Usage and Examples
-
 ```
-  tusc v0.1.1 | (c) Jitendra Adhikari
+  tusc v0.5.0 | (c) Jitendra Adhikari
   tusc is bash implementation of tus-client (https://tus.io).
 
   Usage:
@@ -42,11 +42,14 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
     -a --algo      The algorigthm for key &/or checksum.
                    (Eg: sha1, sha256)
     -b --base-path The tus-server base path (Default: '/files/').
+    -C --no-color  Donot color the output (Useful for parsing output).
     -f --file      The file to upload.
     -h --help      Show help information and usage.
     -H --host      The tus-server host where file is uploaded.
     -L --locate    Locate the uploaded file in tus-server.
+    -S --no-spin   Donot show the spinner (Useful for parsing output).
     -u --update    Update tusc to latest version.
+       --version   Print the current tusc version.
 
   Examples:
     tusc --help                           # shows this help
@@ -58,8 +61,18 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
     tusc -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
 ```
 
-### Debugging
+If you want to parse the output of `tusc`, pass in `-C` (no color) and `-S` (no spin) flags. Eg:
+```sh
+# Locate the URL of a file and download it
+wget $(tusc -H 0:1080 -f ww.mp4 -L -S -C | cut -c 6-999) -O ww.mp4.1
+```
 
+### Preview
+See `tusc` in action with debug mode where the upload is aborted frequently with `Ctrl+C` interrupt.
+
+[![Screen Preview](https://imgur.com/SN4lE3o.gif "tusc in action")](https://github.com/adhocore/tusc.sh)
+
+### Debugging
 To print the debugging information pass in `DEBUG=1` env like so:
 ```sh
 DEBUG=1 tusc 0:1080 ww.mp4
@@ -75,8 +88,8 @@ To revert the above step, just remove the debug file:
 rm ~/.tus.dbg
 ```
 
-## Trying Out
 
+## Trying Out
 To get hands on in local machine, you can install [tusd](https://github.com/tus/tusd#download-pre-builts-binaries-recommended) server.
 
 Then,
