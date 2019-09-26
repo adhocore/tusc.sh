@@ -54,6 +54,7 @@ usage()
     $(info "-a --algo")      $(comment "The algorigthm for key &/or checksum.")
                    $(comment "(Eg: sha1, sha256)")
     $(info "-b --base-path") $(comment "The tus-server base path (Default: '/files/').")
+    $(info "-c --creds")     $(comment "File with credentials, user and pass")
     $(info "-f --file")      $(comment "The file to upload.")
     $(info "-h --help")      $(comment "Show help information and usage.")
     $(info "-H --host")      $(comment "The tus-server host where file is uploaded.")
@@ -68,6 +69,10 @@ usage()
     $TUSC -H 0:1080 -f ww.mp4              # same as above
     $TUSC -H 0:1080 -f ww.mp4 -a sha256    # same as above but uses sha256 algo for key/checksum
     $TUSC -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
+
+    Credential file (Shell syntax, plain text):
+        USER="my_user"
+        PASS="my_pass"
 USAGE
 }
 
@@ -100,7 +105,10 @@ request()
 {
   echo > $HFILE
   [[ $DEBUG ]] && comment "> curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1"
-  BODY=$(bash -c "curl -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1")
+
+  USERPASS=""
+  [[ x"${USER}" != x"" ]] && USERPASS="--basic -u '${USER}:${PASS}'"
+  BODY=$(bash -c "curl ${USERPASS} -sSLD $HFILE -H 'Tus-Resumable: 1.0.0' $1")
   HEADERS=()
 
   while IFS=':' read key value; do
@@ -163,6 +171,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -a | --algo) SUMALGO="$2"; shift 2 ;;
     -b | --base-path) BASEPATH="$2"; shift 2 ;;
+    -c | --CREDS) CREDS="$2"; shift 2 ;;
     -f | --file) FILE="$2"; shift 2 ;;
     -h | --help | help) usage $1; exit 0 ;;
     -H | --host) HOST="$2"; shift 2 ;;
@@ -178,9 +187,15 @@ done
 
 trap on-exit EXIT
 
+# Default credentials
+USER="" PASS=""
+if [[ x"${CREDS:-}" != x"" ]]
+then
+    [[ -r ${CREDS} ]] && source ${CREDS} || error "reading credential-file failed" 1
+fi
 [[ $HOST ]] || [[ $LOCATE ]] || error "--host required" 1
 [[ $FILE ]] || error "--file required" 1
-[[ -f $FILE ]] || error "--file doesnt exist" 1
+[[ -f $FILE ]] || error "--file doesn't exist" 1
 
 SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
@@ -209,10 +224,12 @@ if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
 # create request
 else
   OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
+  meta="filename $(echo -n $NAME | base64 -w 0)"
+  [[ x"${USER}" != x"" ]] && meta="${meta},user $(printf "%s" "${USER}" | base64)"
   request "-H 'Upload-Length: $SIZE' \
     -H 'Upload-Key: $KEY' \
     -H 'Upload-Checksum: $CHKSUM' \
-    -H 'Upload-Metadata: filename $(echo -n $NAME | base64 -w 0)' \
+    -H 'Upload-Metadata: ${meta}' \
     -X POST $HOST${BASEPATH:-/files/}"
 
   TUSURL=${HEADERS[Location]}
@@ -220,6 +237,11 @@ else
   # save location config
   tus-config ".[\"$KEY\"].location" "$TUSURL"
 fi
+[[ x"${USER}" != x"" ]] && {
+  USERB64="$(printf "%s" "${USER}" | base64)"
+  PASSB64="$(printf "%s" "${PASS}" | base64)"
+  TUSURL="$(echo "${TUSURL}" | sed "s!://!://${USERB64}:${PASSB64}@!")"
+}
 
 # patch request
 request "-H 'Content-Type: application/offset+octet-stream' \
