@@ -13,14 +13,8 @@ before_script:
   - chmod +x ./tusd_linux_amd64/tusd
 
 script:
-  # lint
-  - 'export COMMITS=$(git log --oneline --pretty="%s" --walk-reflogs --no-merges ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --)'
-  - 'export GREPS=$(grep -E "^(docs|chore|feat|fix|infra|perf|refactor|style|test)(\(\w+\))?: [a-z].+" <<< $COMMITS)'
-  - '[[ $BRANCH == master ]] || [[ $(wc -l <<< $COMMITS) -eq $(wc -l <<< $GREPS) ]] || exit 1'
-  # upload
   - './tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
   - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/'
-  # download and verify
   - 'URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L -C -S | cut -c 6-999)'
   - 'wget $URL -O tusd_linux_amd64.tar.gz1'
   - '[[ "$(md5sum tusd_linux_amd64.tar.gz1)" == "$(md5sum tusd_linux_amd64.tar.gz)1" ]] || exit 1'
