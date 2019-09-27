@@ -24,9 +24,16 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
 ```
 
 ### System Requirements
+
+- `base64`
 - `curl`
 - `dd`
-- `sha1sum`/`sha256sum`
+- `grep`
+- `mktemp`
+- `readlink`, `realpath`
+- `sha1sum`, `sha256sum`, `seq`, `sleep`
+
+> Donot worry, in a typical UNIX flavored system these are likely to be there already.
 
 
 ## Usage and Examples
@@ -42,7 +49,9 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
     -a --algo      The algorigthm for key &/or checksum.
                    (Eg: sha1, sha256)
     -b --base-path The tus-server base path (Default: '/files/').
-    -c --creds     File with credentials, user and pass
+    -c --creds     File with credentials; user and pass in shell syntax:
+                     USER="my_user"
+                     PASS="my_pass"
     -C --no-color  Donot color the output (Useful for parsing output).
     -f --file      The file to upload.
     -h --help      Show help information and usage.
@@ -60,10 +69,6 @@ chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
     tusc -H 0:1080 -f ww.mp4              # same as above
     tusc -H 0:1080 -f ww.mp4 -a sha256    # same as above but uses sha256 algo for key/checksum
     tusc -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
-
-    Credential file (Shell syntax, plain text):
-        USER="my_user"
-        PASS="my_pass"
 ```
 
 If you want to parse the output of `tusc`, pass in `-C` (no color) and `-S` (no spin) flags. Eg:
