@@ -13,8 +13,15 @@ before_script:
   - chmod +x ./tusd_linux_amd64/tusd
 
 script:
+  # lint
+  - 'export COMMITS=$(git log -50 --oneline --pretty="%s" --no-merges --grep "skip" --grep "Revert" --invert-grep ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --)'
+  - 'export FILTERED=$(echo -e "$COMMITS" | grep -E "^(build|docs|chore|feat|fix|infra|perf|rebase|refactor|release|revert|style|test)(\(\w+\))?: [a-z].+")'
+  - 'echo -e "$COMMITS" > .commits && echo -e "$FILTERED" > .filtered'
+  - '[[ $BRANCH == master ]] || [[ $(wc -l <<< $COMMITS) -eq $(wc -l <<< $FILTERED) ]] || diff .commits .filtered'
+  # upload
   - './tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
   - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/'
+  # download and verify
   - 'URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L -C -S | cut -c 6-999)'
   - 'wget $URL -O tusd_linux_amd64.tar.gz1'
   - '[[ "$(md5sum tusd_linux_amd64.tar.gz1)" == "$(md5sum tusd_linux_amd64.tar.gz)1" ]] || exit 1'
