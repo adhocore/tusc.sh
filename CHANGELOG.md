@@ -1,3 +1,27 @@
+## [0.6.1](https://github.com/adhocore/tusc.sh/releases/tag/0.6.1) (2019-09-27)
+
+### Features
+- Add credential option (Jitendra Adhikari) [_181a628_](https://github.com/adhocore/tusc.sh/commit/181a628)
+- **Tusc**: Add --no-spin, --no-color and rename vars (Jitendra Adhikari) [_2be4503_](https://github.com/adhocore/tusc.sh/commit/2be4503)
+- Show spinner on slower subtasks (Jitendra Adhikari) [_18ece00_](https://github.com/adhocore/tusc.sh/commit/18ece00)
+
+### Miscellaneous
+- Cleanup creds (will document instead) (Jitendra Adhikari) [_e265c40_](https://github.com/adhocore/tusc.sh/commit/e265c40)
+- Create FUNDING.yml (Jitendra Adhikari) [_3122b31_](https://github.com/adhocore/tusc.sh/commit/3122b31)
+
+### Documentations
+- Update help and usage, add preview (Jitendra Adhikari) [_d30431e_](https://github.com/adhocore/tusc.sh/commit/d30431e)
+- On git lfs (Jitendra Adhikari) [_e978e11_](https://github.com/adhocore/tusc.sh/commit/e978e11)
+
+### 
+- **Travis**: Lint on every branch, group scripts (Jitendra Adhikari) [_630baf2_](https://github.com/adhocore/tusc.sh/commit/630baf2)
+- **Travis**: Improve lint script (Jitendra Adhikari) [_1df33a4_](https://github.com/adhocore/tusc.sh/commit/1df33a4)
+- **Travis**: Fix wc input (Jitendra Adhikari) [_ab99fc0_](https://github.com/adhocore/tusc.sh/commit/ab99fc0)
+- **Travis**: Add commit lint (Jitendra Adhikari) [_06e60fa_](https://github.com/adhocore/tusc.sh/commit/06e60fa)
+- **Travis**: Update and simplify scripts (Jitendra Adhikari) [_5bb74dd_](https://github.com/adhocore/tusc.sh/commit/5bb74dd)
+- Travis test scripts (Jitendra Adhikari) [_14ed7d5_](https://github.com/adhocore/tusc.sh/commit/14ed7d5)
+
+
 ## [0.6.0](https://github.com/adhocore/tusc.sh/releases/tag/0.6.0) (2019-09-27)
 
 ### Internal Refactors
