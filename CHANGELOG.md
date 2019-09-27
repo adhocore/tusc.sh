@@ -1,3 +1,15 @@
+## [0.6.0](https://github.com/adhocore/tusc.sh/releases/tag/0.6.0) (2019-09-27)
+
+### Internal Refactors
+- Cleanup creds from tusurl, simplify creds validation and meta (Jitendra Adhikari) [_16a0f6f_](https://github.com/adhocore/tusc.sh/commit/16a0f6f)
+
+### Documentations
+- Add creds example, update system requirements (Jitendra Adhikari) [_efa2cda_](https://github.com/adhocore/tusc.sh/commit/efa2cda)
+
+### Miscellaneous
+- Cleanup creds (will document instead) (Jitendra Adhikari) [_0809e40_](https://github.com/adhocore/tusc.sh/commit/0809e40)
+
+
 ## [0.5.0](https://github.com/adhocore/tusc.sh/releases/tag/0.5.0) (2019-09-26)
 
 ### Features
