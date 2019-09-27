@@ -16,7 +16,7 @@ script:
   # lint
   - 'export COMMITS=$(git log --oneline --pretty="%s" --walk-reflogs --no-merges ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} --)'
   - 'export GREPS=$(grep -E "^(docs|chore|feat|fix|infra|perf|refactor|style|test)(\(\w+\))?: [a-z].+" <<< $COMMITS)'
-  - '[[ $BRANCH == master ]] || [[ $(wc -l $COMMITS) -eq $(wc -l $GREPS) ]] || exit 1'
+  - '[[ $BRANCH == master ]] || [[ $(wc -l <<< $COMMITS) -eq $(wc -l <<< $GREPS) ]] || exit 1'
   # upload
   - './tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
   - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/'
