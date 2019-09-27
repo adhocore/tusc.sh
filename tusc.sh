@@ -20,7 +20,7 @@ line() { [[ $NOCOLOR ]] && echo -e "$1" || echo -e "\e[${3:-0};$2m$1\e[0m"; }
 error() { line "$1" 31; if [[ ! ${2:-0} -eq 0 ]]; then exit $2; fi }
 ok() { line "${1:-  Done}" 32; }
 info() { line "$1" 33; }
-comment() { line "$1" 30 1; }
+comment() { line "$1" 2 1; }
 
 # show version
 version() { echo v0.5.0; }
@@ -54,7 +54,9 @@ usage()
     $(info "-a --algo")      $(comment "The algorigthm for key &/or checksum.")
                    $(comment "(Eg: sha1, sha256)")
     $(info "-b --base-path") $(comment "The tus-server base path (Default: '/files/').")
-    $(info "-c --creds")     $(comment "File with credentials, user and pass")
+    $(info "-c --creds")     $(comment "File with credentials; user and pass in shell syntax:")
+                     $(line 'USER="my_user"' 36)
+                     $(line 'PASS="my_pass"' 36)
     $(info "-C --no-color")  $(comment "Donot color the output (Useful for parsing output).")
     $(info "-f --file")      $(comment "The file to upload.")
     $(info "-h --help")      $(comment "Show help information and usage.")
@@ -72,10 +74,6 @@ usage()
     $TUSC -H 0:1080 -f ww.mp4              # same as above
     $TUSC -H 0:1080 -f ww.mp4 -a sha256    # same as above but uses sha256 algo for key/checksum
     $TUSC -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
-
-    Credential file (Shell syntax, plain text):
-        USER="my_user"
-        PASS="my_pass"
 USAGE
 }
 
@@ -107,23 +105,18 @@ filepart() # $1 = start_byte, $2 = byte_length, $3 = file
 request()
 {
   echo > $HEADER
-  [[ $DEBUG ]] && comment "> curl -sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1"
-
-  USERPASS=""
-  [[ x"${USER}" != x"" ]] && USERPASS="--basic -u '${USER}:${PASS}'"
-  BODY=$(bash -c "curl ${USERPASS} -sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1")
-  HEADERS=()
+  [[ $CREDS ]] && USERPASS="--basic --user '$USER:$PASS' "
+  [[ $DEBUG ]] && comment "> curl ${USERPASS//:$PASS/}-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1"
+  BODY=$(bash -c "curl $USERPASS-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1") HEADERS=()
 
   while IFS=':' read key value; do
     if [[ "${key:0:5}" == "HTTP/" ]]; then
       value=$(echo "$key" | grep -Eo '[0-9]{3}') key=Status
     fi
-    value="${value/ /}"
-    HEADERS[$key]="${value%$'\r'}"
+    value="${value/ /}" HEADERS[$key]="${value%$'\r'}"
   done < <(cat "$HEADER")
 
   if [[ "${HEADERS[Status]}" == "20"* ]]; then ISOK=1; else ISOK=0; fi
-
   if [[ $ISOK -eq 0 ]] && [[ "$1" != *"--head"* ]]; then error "$BODY" 1; fi
 }
 
@@ -194,12 +187,7 @@ done
 
 trap on-exit EXIT
 
-# Default credentials
-USER="" PASS=""
-if [[ x"${CREDS:-}" != x"" ]]
-then
-    [[ -r ${CREDS} ]] && source ${CREDS} || error "reading credential-file failed" 1
-fi
+[[ $CREDS ]] && { [[ -f $CREDS ]] && source $CREDS && [[ $PASS ]] || error "--creds file couldn't be loaded" 1; }
 [[ $HOST ]] || [[ $LOCATE ]] || error "--host required" 1
 [[ $FILE ]] || error "--file required" 1
 [[ -f $FILE ]] || error "--file doesn't exist" 1
@@ -230,12 +218,12 @@ if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
 # create request
 else
   OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
-  meta="filename $(echo -n $NAME | base64 -w 0)"
-  [[ x"${USER}" != x"" ]] && meta="${meta},user $(printf "%s" "${USER}" | base64)"
+  META="filename $(echo -n $NAME | base64 -w 0)"
+  [[ $CREDS ]] && META="$META,user $(echo -n $USER | base64 -w 0)"
   request "-H 'Upload-Length: $SIZE' \
     -H 'Upload-Key: $KEY' \
     -H 'Upload-Checksum: $CHKSUM' \
-    -H 'Upload-Metadata: ${meta}' \
+    -H 'Upload-Metadata: $META' \
     -X POST $HOST${BASEPATH:-/files/}"
 
   TUSURL=${HEADERS[Location]}
@@ -243,11 +231,6 @@ else
   # save location config
   tus-config ".[\"$KEY\"].location" "$TUSURL"
 fi
-[[ x"${USER}" != x"" ]] && {
-  USERB64="$(printf "%s" "${USER}" | base64)"
-  PASSB64="$(printf "%s" "${PASS}" | base64)"
-  TUSURL="$(echo "${TUSURL}" | sed "s!://!://${USERB64}:${PASSB64}@!")"
-}
 
 # patch request
 request "-H 'Content-Type: application/offset+octet-stream' \
