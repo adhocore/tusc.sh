@@ -207,7 +207,7 @@ CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
 # head request
 TUSURL=`tus-config ".[\"$KEY\"].location?"`
 [[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; [[ $LOCATE ]] && exit $?
-[[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
+[[ $TUSURL ]] && [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
 if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
   OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
@@ -227,6 +227,7 @@ else
     -X POST $HOST${BASEPATH:-/files/}"
 
   TUSURL=${HEADERS[Location]}
+  [[ $TUSURL ]] || error "Tus server replied with empty location. Try changing --base-path param." 1
 
   # save location config
   tus-config ".[\"$KEY\"].location" "$TUSURL"
