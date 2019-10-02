@@ -1,3 +1,21 @@
+## [0.7.0](https://github.com/adhocore/tusc.sh/releases/tag/0.7.0) (2019-10-02)
+
+### Features
+- Improve performance by caching sha keys (Jitendra Adhikari) [_5340593_](https://github.com/adhocore/tusc.sh/commit/5340593)
+
+### Bug Fixes
+- Respect NOCOLOR (-C) (Jitendra Adhikari) [_4ae4f0a_](https://github.com/adhocore/tusc.sh/commit/4ae4f0a)
+
+### Internal Refactors
+- Improve msg helpers, dont show url on failure (Jitendra Adhikari) [_6357fc1_](https://github.com/adhocore/tusc.sh/commit/6357fc1)
+
+### Miscellaneous
+- Sensor the asset release output (Jitendra Adhikari) [_12e6ad2_](https://github.com/adhocore/tusc.sh/commit/12e6ad2)
+
+### Documentations
+- Update installation instruction (Jitendra Adhikari) [_62c5d67_](https://github.com/adhocore/tusc.sh/commit/62c5d67)
+
+
 ## [0.6.4](https://github.com/adhocore/tusc.sh/releases/tag/0.6.4) (2019-10-02)
 
 ### Miscellaneous
