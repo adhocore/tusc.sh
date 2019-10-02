@@ -124,3 +124,10 @@ It should start from where it last stopped.
 ```sh
 ls -al ~/.tusd-data
 ```
+
+
+### Contributors
+
+- [adhocore](https://github.com/adhocore) - **Lead Developer**
+- [tonk](https://github.com/tonk) - **Credential support**
+- Wouter van Hilst - **Chunked upload**
