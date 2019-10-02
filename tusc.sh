@@ -237,7 +237,8 @@ request "-H 'Content-Type: application/offset+octet-stream' \
   -H 'Content-Length: $LEFTOVER' \
   -H 'Upload-Checksum: $CHKSUM' \
   -H 'Upload-Offset: $OFFSET' \
-  --data-binary '@$FILEPART' \
+  -H 'Transfer-Encoding: chunked' \
+  --upload-file '$FILEPART' \
   --request PATCH $TUSURL" &
 
 # show spinner
