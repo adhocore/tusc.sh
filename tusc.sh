@@ -23,7 +23,7 @@ info() { line "$1" 33; }
 comment() { line "$1" 2 1; }
 
 # show version
-version() { echo v0.6.1; }
+version() { echo v0.6.2; }
 
 # update tusc
 update()

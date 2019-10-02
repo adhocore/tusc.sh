@@ -1,3 +1,12 @@
+## [0.6.2](https://github.com/adhocore/tusc.sh/releases/tag/0.6.2) (2019-10-02)
+
+### Bug Fixes
+- Use chunked transfer instead of binary for really big files (Jitendra Adhikari) [_4426ddf_](https://github.com/adhocore/tusc.sh/commit/4426ddf)
+
+### Documentations
+- Add contributors (Jitendra Adhikari) [_c89e4ad_](https://github.com/adhocore/tusc.sh/commit/c89e4ad)
+
+
 ## [0.6.1](https://github.com/adhocore/tusc.sh/releases/tag/0.6.1) (2019-09-27)
 
 ### Features
