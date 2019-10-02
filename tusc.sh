@@ -192,13 +192,16 @@ trap on-exit EXIT
 SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
 
-FILE=`realpath $FILE`  NAME=`basename $FILE`  SIZE=`stat -c %s $FILE`  HEADER=`mktemp -t tus.XXXXXXXXXX`
+FILE=`realpath $FILE`  NAME=`basename $FILE`  SIZE=`stat -c %s $FILE`  MTIME=`stat -c %Y $FILE`
+HEADER=`mktemp -t tus.XXXXXXXXXX`
 
-# calc key &/or checksum
-[[ $DEBUG ]] && comment "> ${SUMALGO}sum $FILE"
-spinner && read -r KEY _ <<< `${SUMALGO}sum $FILE` && no-spinner
-
+# calc &/or cache key and checksum
+KEY=`tus-config ".[\"$FILE:$MTIME\"].$SUMALGO?"`
+[[ "null" == "$KEY" ]] && [[ $DEBUG ]] && comment "> ${SUMALGO}sum $FILE"
+[[ "null" == "$KEY" ]] && spinner && read -r KEY _ <<< `${SUMALGO}sum $FILE` && no-spinner
+tus-config ".[\"$FILE:$MTIME\"].$SUMALGO" "$KEY"
 CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
+
 [[ $DEBUG ]] && info "HOST  : $HOST\nHEADER: $HEADER\nFILE  : $NAME\nSIZE  : $SIZE\nKEY   : $KEY\nCHKSUM: $CHKSUM"
 
 # head request
