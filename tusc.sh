@@ -16,7 +16,10 @@ declare -A HEADERS    # assoc headers of last request
 declare ISOK=0        # is last request ok?
 
 # message helpers
-line() { echo -e "\e[${3:-0};$2m$1\e[0m"; if [[ "$4" != "" ]]; then exit $4; fi }
+line() {
+  [[ $NOCOLOR ]] && echo -e "$1" || echo -e "\e[${3:-0};$2m$1\e[0m"
+  [[ "$4" == "" ]] || exit $4
+}
 error() { line "$1" 31 0 $2; }
 ok() { line "${1:-  Done}" 32 0 $2; }
 info() { line "$1" 33 0 $2; }
