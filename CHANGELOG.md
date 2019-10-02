@@ -1,3 +1,9 @@
+## [0.6.3](https://github.com/adhocore/tusc.sh/releases/tag/0.6.3) (2019-10-02)
+
+### Internal Refactors
+- Check TUSURL strictly (Jitendra Adhikari) [_85a3efa_](https://github.com/adhocore/tusc.sh/commit/85a3efa)
+
+
 ## [0.6.2](https://github.com/adhocore/tusc.sh/releases/tag/0.6.2) (2019-10-02)
 
 ### Bug Fixes
