@@ -16,11 +16,11 @@ declare -A HEADERS    # assoc headers of last request
 declare ISOK=0        # is last request ok?
 
 # message helpers
-line() { [[ $NOCOLOR ]] && echo -e "$1" || echo -e "\e[${3:-0};$2m$1\e[0m"; }
-error() { line "$1" 31; if [[ ! ${2:-0} -eq 0 ]]; then exit $2; fi }
-ok() { line "${1:-  Done}" 32; }
-info() { line "$1" 33; }
-comment() { line "$1" 2 1; }
+line() { echo -e "\e[${3:-0};$2m$1\e[0m"; if [[ "$4" != "" ]]; then exit $4; fi }
+error() { line "$1" 31 0 $2; }
+ok() { line "${1:-  Done}" 32 0 $2; }
+info() { line "$1" 33 0 $2; }
+comment() { line "$1" 30 1 $2; }
 
 # show version
 version() { echo v0.6.4; }
@@ -29,10 +29,7 @@ version() { echo v0.6.4; }
 update()
 {
   NEWVER=`curl -sSL https://raw.githubusercontent.com/adhocore/tusc.sh/master/VERSION`
-  if [ "v$NEWVER" == "$(version)" ]; then
-    ok "Already latest version"
-    return 0
-  fi
+  [[ "v$NEWVER" == "$(version)" ]] && ok "Already latest version" 0
 
   info "Updating $TUSC ..."
   curl -sSLo ${FULL} https://raw.githubusercontent.com/adhocore/tusc.sh/master/tusc.sh
@@ -81,7 +78,7 @@ USAGE
 tus-config() # $1 = key, $2 = value
 {
   TUSFILE=`realpath ~/.tus.json`
-  if [ ! -f $TUSFILE ]; then echo '{}' > $TUSFILE; fi
+  [[ -f $TUSFILE ]] || echo '{}' > $TUSFILE
   TUSJSON=`cat $TUSFILE`
 
   if [[ $# -eq 0 ]]; then
@@ -96,7 +93,7 @@ tus-config() # $1 = key, $2 = value
 # create a part of file
 filepart() # $1 = start_byte, $2 = byte_length, $3 = file
 {
-  dd bs=32M skip="$1" count="$2" iflag=skip_bytes ${3:+if="$3"} of="$3.part" > /dev/null 2>&1
+  dd bs=32M skip="$1" count="$2" iflag=skip_bytes ${3:+if="$3"} ${3:+of="$3.part"} > /dev/null 2>&1
 
   echo `realpath $3.part`
 }
@@ -113,7 +110,7 @@ request()
     if [[ "${key:0:5}" == "HTTP/" ]]; then
       value=$(echo "$key" | grep -Eo '[0-9]{3}') key=Status
     fi
-    value="${value/ /}" HEADERS[$key]="${value%$'\r'}"
+    value="${value/ /}"  HEADERS[$key]="${value%$'\r'}"
   done < <(cat "$HEADER")
 
   if [[ "${HEADERS[Status]}" == "20"* ]]; then ISOK=1; else ISOK=0; fi
@@ -155,11 +152,11 @@ on-exit()
   rm -f $FILE.part $HEADER0 $HEADER
   [[ $OFFSET ]] || return 0
 
-  OFFSET=${HEADERS[Upload-Offset]:-0} LEFTOVER=$((SIZE - OFFSET))
+  OFFSET=${HEADERS[Upload-Offset]:-0}  LEFTOVER=$((SIZE - OFFSET))
   if [[ $LEFTOVER -eq 0 ]]; then
     ok "✔ Uploaded successfully!"
   else
-    error "✖ Unfinished upload, please rerun the command to resume."
+    error "✖ Unfinished upload, please rerun the command to resume." 1
   fi
   info "URL: $TUSURL"
 }
@@ -195,7 +192,7 @@ trap on-exit EXIT
 SUMALGO=${SUMALGO:-sha1}
 [[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
 
-FILE=`realpath $FILE` NAME=`basename $FILE` SIZE=`stat -c %s $FILE` HEADER=`mktemp -t tus.XXXXXXXXXX`
+FILE=`realpath $FILE`  NAME=`basename $FILE`  SIZE=`stat -c %s $FILE`  HEADER=`mktemp -t tus.XXXXXXXXXX`
 
 # calc key &/or checksum
 [[ $DEBUG ]] && comment "> ${SUMALGO}sum $FILE"
