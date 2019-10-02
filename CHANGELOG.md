@@ -1,3 +1,9 @@
+## [0.6.4](https://github.com/adhocore/tusc.sh/releases/tag/0.6.4) (2019-10-02)
+
+### Miscellaneous
+- Add after-release hook (Jitendra Adhikari) [_cf932f8_](https://github.com/adhocore/tusc.sh/commit/cf932f8)
+
+
 ## [0.6.3](https://github.com/adhocore/tusc.sh/releases/tag/0.6.3) (2019-10-02)
 
 ### Internal Refactors
