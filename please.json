@@ -1,3 +1,4 @@
 {
-  "before-push": "sed -i 's/echo v.*;/echo v{NEXT_VERSION};/' ./tusc.sh; git add ./tusc.sh"
+  "before-push": "sed -i 's/echo v.*;/echo v{NEXT_VERSION};/' ./tusc.sh; git add ./tusc.sh",
+  "after-release": "curl --silent -H 'Authorization: token {GH_AUTH_TOKEN}' -H 'Content-Type: application/octet-stream' --data-binary @tusc.sh 'https://uploads.{GH_REPO}/releases/{LAST_RELEASE_ID}/assets?name=tusc'"
 }
