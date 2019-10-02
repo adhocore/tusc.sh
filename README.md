@@ -19,8 +19,11 @@ If anything goes wrong, you can rerun the command to resume upload from where it
 # jq
 sudo apt install jq -y
 
-curl -sSLo ~/tusc https://raw.githubusercontent.com/adhocore/tusc.sh/master/tusc.sh
+curl -sSLo ~/tusc curl https://github.com/adhocore/tusc.sh/releases/latest/download/tusc
+# for global binary
 chmod +x ~/tusc && sudo ln -s ~/tusc /usr/local/bin/tusc
+# OR, for user binary
+chmod +x ~/tusc && mv ~/tusc ~/.local/bin/tusc
 ```
 
 ### System Requirements
