@@ -45,8 +45,8 @@ chmod +x ~/tusc && mv ~/tusc ~/.local/bin/tusc
   tusc is bash implementation of tus-client (https://tus.io).
 
   Usage:
-    tusc <--options>
-    tusc <host> <file> [algo]
+    tusc <--options> -- [curl args]
+    tusc <host> <file> [algo] -- [curl args]
 
   Options:
     -a --algo      The algorigthm for key &/or checksum.
@@ -70,8 +70,8 @@ chmod +x ~/tusc && mv ~/tusc ~/.local/bin/tusc
     tusc --version                        # prints current version of itself
     tusc    0:1080    ww.mp4              # uploads ww.mp4 to http://0.0.0.0:1080/files/
     tusc -H 0:1080 -f ww.mp4              # same as above
+    tusc -H 0:1080 -f ww.mp4 -- -Lv       # same as above plus sends -Lv to curl command
     tusc -H 0:1080 -f ww.mp4 -a sha256    # same as above but uses sha256 algo for key/checksum
-    tusc -H 0:1080 -f ww.mp4 -b /store/   # uploads ww.mp4 to http://0.0.0.0:1080/store/
 ```
 
 If you want to parse the output of `tusc`, pass in `-C` (no color) and `-S` (no spin) flags. Eg:
@@ -79,6 +79,15 @@ If you want to parse the output of `tusc`, pass in `-C` (no color) and `-S` (no 
 # Locate the URL of a file and download it
 wget $(tusc -H 0:1080 -f ww.mp4 -L -S -C | cut -c 6-999) -O ww.mp4.1
 ```
+
+### Authentication
+
+If your tusd server requires special header or token for auth, just pass in `[curl args]`:
+```sh
+tusc -H 0:1080 -f ww.mp4 -b /store/ -- -H 'Authorization: Bearer <token>'
+```
+
+In fact you can pass in anything after `--` as extra curl parameter.
 
 ### Preview
 See `tusc` in action with debug mode where the upload is aborted frequently with `Ctrl+C` interrupt.
