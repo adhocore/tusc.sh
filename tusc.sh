@@ -10,7 +10,7 @@
 
 if [[ -f ~/.tus.dbg ]]; then set -ex; else set -e; fi
 
-FULL=$(readlink -f $0) TUSC=$(basename $0) SPINID=0
+FULL=$(readlink -f $0) TUSC=$(basename $0) SPINID=0 CURLARGS=
 
 declare -A HEADERS    # assoc headers of last request
 declare ISOK=0        # is last request ok?
@@ -107,7 +107,7 @@ request()
   echo > $HEADER
   [[ $CREDS ]] && USERPASS="--basic --user '$USER:$PASS' "
   [[ $DEBUG ]] && comment "> curl ${USERPASS//:$PASS/}-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1"
-  BODY=$(bash -c "curl $USERPASS-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1") HEADERS=()
+  BODY=$(bash -c "curl $USERPASS-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $CURLARGS $1") HEADERS=()
 
   while IFS=':' read key value; do
     if [[ "${key:0:5}" == "HTTP/" ]]; then
@@ -178,6 +178,7 @@ while [[ $# -gt 0 ]]; do
     -S | --no-spin) NOSPIN=1; shift ;;
     -u | --update) update; exit 0 ;;
          --version | version) version; exit 0 ;;
+    --) shift; CURLARGS=$@; break ;; 
     *) if [[ $HOST ]]; then
         if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}"; else FILE="$1"; fi
       else HOST=$1; fi
