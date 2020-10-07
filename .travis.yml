@@ -21,7 +21,7 @@ script:
 
   # upload
   - './tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
-  - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/'
+  - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -- -v'
 
   # download and verify
   - 'URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L -C -S | cut -c 6-999)'
