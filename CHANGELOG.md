@@ -1,3 +1,17 @@
+## [0.8.0](https://github.com/adhocore/tusc.sh/releases/tag/0.8.0) (2020-10-09)
+
+### Features
+- **Tusc**: Add rest args as curl args (Jitendra Adhikari) [_be5a88a_](https://github.com/adhocore/tusc.sh/commit/be5a88a)
+
+### Documentations
+- Fix a README error (everconnectcn) [_42be48d_](https://github.com/adhocore/tusc.sh/commit/42be48d)
+- About -- curl args (Jitendra Adhikari) [_1e33f1d_](https://github.com/adhocore/tusc.sh/commit/1e33f1d)
+- Fix a README error (everconnectcn) [_3ee0a02_](https://github.com/adhocore/tusc.sh/commit/3ee0a02)
+
+### Builds
+- **Travis**: Test curl args (Jitendra Adhikari) [_9b7160f_](https://github.com/adhocore/tusc.sh/commit/9b7160f)
+
+
 ## [0.7.0](https://github.com/adhocore/tusc.sh/releases/tag/0.7.0) (2019-10-02)
 
 ### Features
