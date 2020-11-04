@@ -8,7 +8,7 @@
 # Be sure to check readme doc at https://github.com/adhocore/tusc.sh
 #
 
-if [[ -f ~/.tus.dbg ]]; then set -ex; else set -e; fi
+if [[ -f $HOME/.tus.dbg ]]; then set -ex; else set -e; fi
 
 FULL=$(readlink -f $0) TUSC=$(basename $0) SPINID=0 CURLARGS=
 
@@ -80,7 +80,7 @@ USAGE
 # get/set tus config
 tus-config() # $1 = key, $2 = value
 {
-  TUSFILE=`realpath ~/.tus.json`
+  TUSFILE="$HOME/.tus.json"
   [[ -f $TUSFILE ]] || echo '{}' > $TUSFILE
   TUSJSON=`cat $TUSFILE`
 
