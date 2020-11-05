@@ -11,6 +11,7 @@ install:
 before_script:
   - chmod +x ./tusc.sh && bash -n ./tusc.sh
   - chmod +x ./tusd_linux_amd64/tusd
+  - touch ~/.tus.dbg
 
 script:
   # lint
@@ -21,9 +22,11 @@ script:
 
   # upload
   - './tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &'
-  - './tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -- -v'
+  - 'DEBUG=1 ./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -- -v'
 
   # download and verify
+  - rm -rf ~/.tus.dbg
+  - cat ~/.tus.json | jq
   - 'URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L -C -S | cut -c 6-999)'
   - 'wget $URL -O tusd_linux_amd64.tar.gz1'
   - '[[ "$(md5sum tusd_linux_amd64.tar.gz1)" == "$(md5sum tusd_linux_amd64.tar.gz)1" ]] || exit 1'
