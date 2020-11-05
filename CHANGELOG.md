@@ -1,3 +1,12 @@
+## [0.8.1](https://github.com/adhocore/tusc.sh/releases/tag/0.8.1) (2020-11-05)
+
+### Bug Fixes
+- **Tusc**: Use HOME env instead of tilde (Jitendra Adhikari) [_768cbc4_](https://github.com/adhocore/tusc.sh/commit/768cbc4)
+
+### Builds
+- **Travis**: Setup debug (Jitendra Adhikari) [_e34673d_](https://github.com/adhocore/tusc.sh/commit/e34673d)
+
+
 ## [0.8.0](https://github.com/adhocore/tusc.sh/releases/tag/0.8.0) (2020-10-09)
 
 ### Features
