@@ -232,6 +232,7 @@ else
 
   TUSURL=${HEADERS[Location]}
   [[ $TUSURL ]] || error "Tus server replied with empty location. Try changing --base-path param." 1
+  [[ $TUSURL != *"://"* ]] && TUSURL=$HOST$TUSURL
 
   # save location config
   tus-config ".[\"$KEY\"].location" "$TUSURL"
