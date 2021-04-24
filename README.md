@@ -3,6 +3,9 @@
 [![Latest Version](https://img.shields.io/github/release/adhocore/tusc.sh.svg?style=flat-square)](https://github.com/adhocore/tusc.sh/releases)
 [![Travis Build](https://img.shields.io/travis/com/adhocore/tusc.sh/master.svg?style=flat-square)](https://travis-ci.com/adhocore/tusc.sh?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Donate](https://img.shields.io/badge/donate-paypal-blue.svg?style=flat-square)](https://www.paypal.me/ji10/50usd)
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Resumable+large+file+uploads+via+TUS+client+protocol+implemented+in+bash&url=https://github.com/adhocore/tusc.sh&hashtags=bash,tus,resumable,uploads)
+
 
 `tusc` is [tus 1.0.0](https://tus.io) client protocol implementation for bash.
 
