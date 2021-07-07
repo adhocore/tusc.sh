@@ -178,7 +178,7 @@ while [[ $# -gt 0 ]]; do
     -S | --no-spin) NOSPIN=1; shift ;;
     -u | --update) update; exit 0 ;;
          --version | version) version; exit 0 ;;
-    --) shift; CURLARGS=$@; break ;; 
+    --) shift; CURLARGS=$@; break ;;
     *) if [[ $HOST ]]; then
         if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}"; else FILE="$1"; fi
       else HOST=$1; fi
@@ -222,8 +222,17 @@ if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
 # create request
 else
   OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
+  SID=$(cat /proc/sys/kernel/random/uuid | awk -F- '{print $1}')
+
   META="filename $(echo -n $NAME | base64 -w 0)"
+  META="$META,sid $(echo -n $SID | base64 -w 0)"
+  META="$META,retention $(echo -n 604800 | base64 -w 0)"
+  META="$META,password $(echo -n $PASS | base64 -w 0)"
+  META="$META,name $(echo -n $NAME | base64 -w 0)"
+  META="$META,comment $(echo -n $COMMENT | base64 -w 0)"
+  META="$META,type $(echo -n $TYPE | base64 -w 0)"
   [[ $CREDS ]] && META="$META,user $(echo -n $USER | base64 -w 0)"
+
   request "-H 'Upload-Length: $SIZE' \
     -H 'Upload-Key: $KEY' \
     -H 'Upload-Checksum: $CHKSUM' \
@@ -244,12 +253,14 @@ request "-H 'Content-Type: application/offset+octet-stream' \
   -H 'Upload-Offset: $OFFSET' \
   -H 'Transfer-Encoding: chunked' \
   --upload-file '$FILEPART' \
-  --request PATCH $TUSURL" &
+  --request PATCH $HOST$TUSURL" &
 
 # show spinner
 spinner
 HEADER0=$HEADER HEADER=`mktemp -t tus.XXXXXXXXXX`
 while :; do
+  [[ -z ${HEADERS[Upload-Offset]} ]] && HEADERS[Upload-Offset]=$SIZE
+
   [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
   request "--head $TUSURL" > /dev/null
   [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] || sleep 2
