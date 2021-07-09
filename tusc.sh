@@ -222,7 +222,7 @@ if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
 # create request
 else
   OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
-  SID=$(cat /proc/sys/kernel/random/uuid | awk -F- '{print $1}')
+  SID=$(cat /proc/sys/kernel/random/uuid | awk -F- '{print $5}')
 
   META="filename $(echo -n $NAME | base64 -w 0)"
   META="$META,sid $(echo -n $SID | base64 -w 0)"
@@ -251,7 +251,7 @@ request "-H 'Content-Type: application/offset+octet-stream' \
   -H 'Content-Length: $LEFTOVER' \
   -H 'Upload-Checksum: $CHKSUM' \
   -H 'Upload-Offset: $OFFSET' \
-  -H 'Transfer-Encoding: chunked' \
+  `[[ ! -v PSITRANSFER ]] && echo "-H 'Transfer-Encoding: chunked'"` \
   --upload-file '$FILEPART' \
   --request PATCH $HOST$TUSURL" &
 
