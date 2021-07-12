@@ -178,6 +178,7 @@ main()
         -H | --host) HOST="$2"; shift 2 ;;
         -L | --locate) LOCATE=1; shift ;;
         -S | --no-spin) NOSPIN=1; shift ;;
+        -p | --psitransfer) PSITRANSFER=1; shift ;;
         -u | --update) update; exit 0 ;;
              --version | version) version; exit 0 ;;
         --) shift; CURLARGS=$@; break ;;
@@ -224,16 +225,20 @@ main()
     # create request
     else
       OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
-      SID=$(cat /proc/sys/kernel/random/uuid | awk -F- '{print $5}')
 
       META="filename $(echo -n $NAME | base64 -w 0)"
-      META="$META,sid $(echo -n $SID | base64 -w 0)"
-      META="$META,retention $(echo -n 604800 | base64 -w 0)"
-      META="$META,password $(echo -n $PASS | base64 -w 0)"
-      META="$META,name $(echo -n $NAME | base64 -w 0)"
-      META="$META,comment $(echo -n $COMMENT | base64 -w 0)"
-      META="$META,type $(echo -n $TYPE | base64 -w 0)"
       [[ $CREDS ]] && META="$META,user $(echo -n $USER | base64 -w 0)"
+
+      if [[ -v PSITRANSFER ]];
+      then
+          SID=$(cat /proc/sys/kernel/random/uuid | awk -F- '{print $5}')
+          META="$META,sid $(echo -n $SID | base64 -w 0)"
+          META="$META,retention $(echo -n 604800 | base64 -w 0)"
+          META="$META,password $(echo -n $PASS | base64 -w 0)"
+          META="$META,name $(echo -n $NAME | base64 -w 0)"
+          META="$META,comment $(echo -n $COMMENT | base64 -w 0)"
+          META="$META,type $(echo -n $TYPE | base64 -w 0)"
+      fi
 
       request "-H 'Upload-Length: $SIZE' \
         -H 'Upload-Key: $KEY' \
@@ -248,6 +253,8 @@ main()
       tus-config ".[\"$KEY\"].location" "$TUSURL"
     fi
 
+    [[ -v PSITRANSFER ]] && TUSURL="$HOST$TUSURL"
+
     # patch request
     request "-H 'Content-Type: application/offset+octet-stream' \
       -H 'Content-Length: $LEFTOVER' \
@@ -255,13 +262,17 @@ main()
       -H 'Upload-Offset: $OFFSET' \
       `[[ ! -v PSITRANSFER ]] && echo "-H 'Transfer-Encoding: chunked'"` \
       --upload-file '$FILEPART' \
-      --request PATCH $HOST$TUSURL" &
+      --request PATCH $TUSURL" &
 
     # show spinner
     spinner
     HEADER0=$HEADER HEADER=`mktemp -t tus.XXXXXXXXXX`
     while :; do
-      [[ -z ${HEADERS[Upload-Offset]} ]] && HEADERS[Upload-Offset]=$SIZE
+      # psitransfer backend does not set Upload-Offset header
+      if [[ -v PSITRANSFER ]] && [[ -z ${HEADERS[Upload-Offset]} ]];
+      then
+          HEADERS[Upload-Offset]=$SIZE
+      fi
 
       [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
       request "--head $TUSURL" > /dev/null
