@@ -164,93 +164,120 @@ on-exit()
   info "URL: $TUSURL"
 }
 
-# argv parsing
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -a | --algo) SUMALGO="$2"; shift 2 ;;
-    -b | --base-path) BASEPATH="$2"; shift 2 ;;
-    -c | --creds) CREDS="$2"; shift 2 ;;
-    -C | --no-color) NOCOLOR=1; shift ;;
-    -f | --file) FILE="$2"; shift 2 ;;
-    -h | --help | help) usage $1; exit 0 ;;
-    -H | --host) HOST="$2"; shift 2 ;;
-    -L | --locate) LOCATE=1; shift ;;
-    -S | --no-spin) NOSPIN=1; shift ;;
-    -u | --update) update; exit 0 ;;
-         --version | version) version; exit 0 ;;
-    --) shift; CURLARGS=$@; break ;; 
-    *) if [[ $HOST ]]; then
-        if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}"; else FILE="$1"; fi
-      else HOST=$1; fi
-      shift ;;
-  esac
-done
+main()
+{
+    # argv parsing
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        -a | --algo) SUMALGO="$2"; shift 2 ;;
+        -b | --base-path) BASEPATH="$2"; shift 2 ;;
+        -c | --creds) CREDS="$2"; shift 2 ;;
+        -C | --no-color) NOCOLOR=1; shift ;;
+        -f | --file) FILE="$2"; shift 2 ;;
+        -h | --help | help) usage $1; exit 0 ;;
+        -H | --host) HOST="$2"; shift 2 ;;
+        -L | --locate) LOCATE=1; shift ;;
+        -S | --no-spin) NOSPIN=1; shift ;;
+        -p | --psitransfer) PSITRANSFER=1; shift ;;
+        -u | --update) update; exit 0 ;;
+             --version | version) version; exit 0 ;;
+        --) shift; CURLARGS=$@; break ;;
+        *) if [[ $HOST ]]; then
+            if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}"; else FILE="$1"; fi
+          else HOST=$1; fi
+          shift ;;
+      esac
+    done
 
-trap on-exit EXIT
+    trap on-exit EXIT
 
-[[ $CREDS ]] && { [[ -f $CREDS ]] && source $CREDS && [[ $PASS ]] || error "--creds file couldn't be loaded" 1; }
-[[ $HOST ]] || [[ $LOCATE ]] || error "--host required" 1
-[[ $FILE ]] || error "--file required" 1
-[[ -f $FILE ]] || error "--file doesn't exist" 1
+    [[ $CREDS ]] && { [[ -f $CREDS ]] && source $CREDS && [[ $PASS ]] || error "--creds file couldn't be loaded" 1; }
+    [[ $HOST ]] || [[ $LOCATE ]] || error "--host required" 1
+    [[ $FILE ]] || error "--file required" 1
+    [[ -f $FILE ]] || error "--file doesn't exist" 1
 
-SUMALGO=${SUMALGO:-sha1}
-[[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
+    SUMALGO=${SUMALGO:-sha1}
+    [[ $SUMALGO == "sha"* ]] || error "--algo '$SUMALGO' not supported" 1
 
-FILE=`realpath $FILE`  NAME=`basename $FILE`  SIZE=`stat -c %s $FILE`  MTIME=`stat -c %Y $FILE`
-HEADER=`mktemp -t tus.XXXXXXXXXX`
+    FILE=`realpath $FILE`  NAME=`basename $FILE`  SIZE=`stat -c %s $FILE`  MTIME=`stat -c %Y $FILE`
+    HEADER=`mktemp -t tus.XXXXXXXXXX`
 
-# calc &/or cache key and checksum
-KEY=`tus-config ".[\"$FILE:$MTIME\"].$SUMALGO?"`
-[[ "null" == "$KEY" ]] && [[ $DEBUG ]] && comment "> ${SUMALGO}sum $FILE"
-[[ "null" == "$KEY" ]] && spinner && read -r KEY _ <<< `${SUMALGO}sum $FILE` && no-spinner
-tus-config ".[\"$FILE:$MTIME\"].$SUMALGO" "$KEY"
-CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
+    # calc &/or cache key and checksum
+    KEY=`tus-config ".[\"$FILE:$MTIME\"].$SUMALGO?"`
+    [[ "null" == "$KEY" ]] && [[ $DEBUG ]] && comment "> ${SUMALGO}sum $FILE"
+    [[ "null" == "$KEY" ]] && spinner && read -r KEY _ <<< `${SUMALGO}sum $FILE` && no-spinner
+    tus-config ".[\"$FILE:$MTIME\"].$SUMALGO" "$KEY"
+    CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
 
-[[ $DEBUG ]] && info "HOST  : $HOST\nHEADER: $HEADER\nFILE  : $NAME\nSIZE  : $SIZE\nKEY   : $KEY\nCHKSUM: $CHKSUM"
+    [[ $DEBUG ]] && info "HOST  : $HOST\nHEADER: $HEADER\nFILE  : $NAME\nSIZE  : $SIZE\nKEY   : $KEY\nCHKSUM: $CHKSUM"
 
-# head request
-TUSURL=`tus-config ".[\"$KEY\"].location?"`
-[[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; [[ $LOCATE ]] && exit $?
-[[ $TUSURL ]] && [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
+    # head request
+    TUSURL=`tus-config ".[\"$KEY\"].location?"`
+    [[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; [[ $LOCATE ]] && exit $?
+    [[ $TUSURL ]] && [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
-if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
-  OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
-  [[ $LEFTOVER -eq 0 ]] && exit 0
-  [[ $DEBUG ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
-  spinner && FILEPART=`filepart $OFFSET $LEFTOVER $FILE` && no-spinner
+    if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
+      OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
+      [[ $LEFTOVER -eq 0 ]] && exit 0
+      [[ $DEBUG ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
+      spinner && FILEPART=`filepart $OFFSET $LEFTOVER $FILE` && no-spinner
 
-# create request
-else
-  OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
-  META="filename $(echo -n $NAME | base64 -w 0)"
-  [[ $CREDS ]] && META="$META,user $(echo -n $USER | base64 -w 0)"
-  request "-H 'Upload-Length: $SIZE' \
-    -H 'Upload-Key: $KEY' \
-    -H 'Upload-Checksum: $CHKSUM' \
-    -H 'Upload-Metadata: $META' \
-    -X POST $HOST${BASEPATH:-/files/}"
+    # create request
+    else
+      OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
 
-  TUSURL=${HEADERS[Location]}
-  [[ $TUSURL ]] || error "Tus server replied with empty location. Try changing --base-path param." 1
+      META="filename $(echo -n $NAME | base64 -w 0)"
+      [[ $CREDS ]] && META="$META,user $(echo -n $USER | base64 -w 0)"
 
-  # save location config
-  tus-config ".[\"$KEY\"].location" "$TUSURL"
-fi
+      if [[ -v PSITRANSFER ]];
+      then
+          SID=$(cat /proc/sys/kernel/random/uuid | awk -F- '{print $5}')
+          META="$META,sid $(echo -n $SID | base64 -w 0)"
+          META="$META,retention $(echo -n 604800 | base64 -w 0)"
+          META="$META,password $(echo -n $PASS | base64 -w 0)"
+          META="$META,name $(echo -n $NAME | base64 -w 0)"
+          META="$META,comment $(echo -n $COMMENT | base64 -w 0)"
+          META="$META,type $(echo -n $TYPE | base64 -w 0)"
+      fi
 
-# patch request
-request "-H 'Content-Type: application/offset+octet-stream' \
-  -H 'Content-Length: $LEFTOVER' \
-  -H 'Upload-Checksum: $CHKSUM' \
-  -H 'Upload-Offset: $OFFSET' \
-  -H 'Transfer-Encoding: chunked' \
-  --upload-file '$FILEPART' \
-  --request PATCH $TUSURL" &
+      request "-H 'Upload-Length: $SIZE' \
+        -H 'Upload-Key: $KEY' \
+        -H 'Upload-Checksum: $CHKSUM' \
+        -H 'Upload-Metadata: $META' \
+        -X POST $HOST${BASEPATH:-/files/}"
 
-# show spinner
-spinner
-HEADER0=$HEADER HEADER=`mktemp -t tus.XXXXXXXXXX`
-while :; do
-  [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
-  request "--head $TUSURL" > /dev/null
-  [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] || sleep 2
-done
+      TUSURL=${HEADERS[Location]}
+      [[ $TUSURL ]] || error "Tus server replied with empty location. Try changing --base-path param." 1
+
+      # save location config
+      tus-config ".[\"$KEY\"].location" "$TUSURL"
+    fi
+
+    [[ -v PSITRANSFER ]] && TUSURL="$HOST$TUSURL"
+
+    # patch request
+    request "-H 'Content-Type: application/offset+octet-stream' \
+      -H 'Content-Length: $LEFTOVER' \
+      -H 'Upload-Checksum: $CHKSUM' \
+      -H 'Upload-Offset: $OFFSET' \
+      `[[ ! -v PSITRANSFER ]] && echo "-H 'Transfer-Encoding: chunked'"` \
+      --upload-file '$FILEPART' \
+      --request PATCH $TUSURL" &
+
+    # show spinner
+    spinner
+    HEADER0=$HEADER HEADER=`mktemp -t tus.XXXXXXXXXX`
+    while :; do
+      # psitransfer backend does not set Upload-Offset header
+      if [[ -v PSITRANSFER ]] && [[ -z ${HEADERS[Upload-Offset]} ]];
+      then
+          HEADERS[Upload-Offset]=$SIZE
+      fi
+
+      [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
+      request "--head $TUSURL" > /dev/null
+      [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] || sleep 2
+    done
+}
+
+main "$@"
