@@ -1,7 +1,7 @@
 # adhocore/tusc.sh
 
 [![Latest Version](https://img.shields.io/github/release/adhocore/tusc.sh.svg?style=flat-square)](https://github.com/adhocore/tusc.sh/releases)
-[![Travis Build](https://img.shields.io/travis/com/adhocore/tusc.sh/master.svg?style=flat-square)](https://travis-ci.com/adhocore/tusc.sh?branch=master)
+[![Travis Build](https://img.shields.io/travis/com/adhocore/tusc.sh/main.svg?style=flat-square)](https://travis-ci.com/adhocore/tusc.sh?branch=main)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Donate 15](https://img.shields.io/badge/donate-paypal-blue.svg?style=flat-square&label=donate+15)](https://www.paypal.me/ji10/15usd)
 [![Donate 25](https://img.shields.io/badge/donate-paypal-blue.svg?style=flat-square&label=donate+25)](https://www.paypal.me/ji10/25usd)
