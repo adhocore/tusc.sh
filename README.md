@@ -90,7 +90,7 @@ wget $(tusc -H 0:1080 -f ww.mp4 -L -S -C | cut -c 6-999) -O ww.mp4.1
 
 If your tusd server requires special header or token for auth, just pass in `[curl args]`:
 ```sh
-tusc -H 0:1080 -f ww.mp4 -b /store/ -- -H 'Authorization: Bearer <token>'
+tusc -H 0:1080 -f ww.mp4 -b /store/ -- -H "'Authorization: Bearer <token>'" -H "'x-key: value'"
 ```
 
 In fact you can pass in anything after `--` as extra curl parameter.
