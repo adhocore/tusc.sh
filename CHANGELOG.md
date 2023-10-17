@@ -1,3 +1,9 @@
+## [v1.0.1](https://github.com/adhocore/tusc.sh/releases/tag/v1.0.1) (2023-10-17)
+
+### Documentations
+- Extra curl args quote escaping (Jitendra Adhikari) [_fe9a3b8_](https://github.com/adhocore/tusc.sh/commit/fe9a3b8)
+
+
 ## [0.8.1](https://github.com/adhocore/tusc.sh/releases/tag/0.8.1) (2020-11-05)
 
 ### Bug Fixes
