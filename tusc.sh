@@ -178,7 +178,7 @@ while [[ $# -gt 0 ]]; do
     -S | --no-spin) NOSPIN=1; shift ;;
     -u | --update) update; exit 0 ;;
          --version | version) version; exit 0 ;;
-    --) shift; CURLARGS=$@; break ;; 
+    --) shift; CURLARGS=$@; break ;;
     *) if [[ $HOST ]]; then
         if [[ $FILE ]]; then SUMALGO="${SUMALGO:-$1}"; else FILE="$1"; fi
       else HOST=$1; fi
@@ -230,11 +230,9 @@ else
     -H 'Upload-Metadata: $META' \
     -X POST $HOST${BASEPATH:-/files/}"
 
-  TUSURL=${HEADERS[Location]}
-  [[ $TUSURL ]] || error "Tus server replied with empty location. Try changing --base-path param." 1
-
   # save location config
-  tus-config ".[\"$KEY\"].location" "$TUSURL"
+  TUSURL=${HEADERS[Location]}
+  [[ $TUSURL ]] && tus-config ".[\"$KEY\"].location" "$TUSURL"
 fi
 
 # patch request
