@@ -124,9 +124,12 @@ Then,
 ```sh
 # run tusd server (http://0.0.0.0:1080)
 tusd -dir ~/.tusd-data > /dev/null 2>&1 &
-
 # start uploading large files
 DEBUG=1 tusc --host 0:1080 --file /full/path/to/large/file
+
+# for tusd v2 (http://0.0.0.0:8080)
+tusd -upload-dir ~/.tusd-data > /dev/null 2>&1 &
+DEBUG=1 tusc --host 0:8080 --file /full/path/to/large/file
 ```
 
 While upload is in progress, you can force abort it using `Ctrl+C`.
