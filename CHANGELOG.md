@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/adhocore/tusc.sh/releases/tag/1.0.2) (2023-10-17)
+
+### Miscellaneous
+- Trigger (Jitendra A) [_18c080e_](https://github.com/adhocore/tusc.sh/commit/18c080e)
+
+
 ## [v1.0.1](https://github.com/adhocore/tusc.sh/releases/tag/v1.0.1) (2023-10-17)
 
 ### Documentations
