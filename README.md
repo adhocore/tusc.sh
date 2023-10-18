@@ -1,7 +1,7 @@
 # adhocore/tusc.sh
 
 [![Latest Version](https://img.shields.io/github/release/adhocore/tusc.sh.svg?style=flat-square)](https://github.com/adhocore/tusc.sh/releases)
-[![Travis Build](https://img.shields.io/travis/com/adhocore/tusc.sh/main.svg?style=flat-square)](https://travis-ci.com/adhocore/tusc.sh?branch=main)
+[![Test](https://github.com/adhocore/tusc.sh/actions/workflows/test.yml/badge.svg)](https://github.com/adhocore/tusc.sh/actions/workflows/test.yml)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Resumable+large+file+uploads+via+TUS+client+protocol+implemented+in+bash&url=https://github.com/adhocore/tusc.sh&hashtags=bash,tus,resumable,uploads)
 [![Support](https://img.shields.io/static/v1?label=Support&message=%E2%9D%A4&logo=GitHub)](https://github.com/sponsors/adhocore)
@@ -41,6 +41,7 @@ chmod +x ~/tusc && mv ~/tusc ~/.local/bin/tusc
 - `mktemp`
 - `readlink`, `realpath`
 - `sha1sum`, `sha256sum`, `seq`, `sleep`
+- `tr`
 
 > Donot worry, in a typical UNIX flavored system these are likely to be there already.
 
