@@ -107,7 +107,8 @@ request()
   echo > $HEADER
   [[ $CREDS ]] && USERPASS="--basic --user '$USER:$PASS' "
   [[ $DEBUG ]] && comment "> curl ${USERPASS//:$PASS/}-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $1"
-  BODY=$(bash -c "curl $USERPASS-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $CURLARGS $1") HEADERS=()
+  [[ $DEBUG ]] && DBG="-v"
+  BODY=$(bash -c "curl $DBG $USERPASS-sSLD $HEADER -H 'Tus-Resumable: 1.0.0' $CURLARGS $1") HEADERS=()
 
   while IFS=':' read key value; do
     if [[ "${key:0:5}" == "HTTP/" ]]; then
@@ -116,8 +117,16 @@ request()
     value="${value/ /}"  HEADERS[$key]="${value%$'\r'}"
   done < <(cat "$HEADER")
 
-  if [[ "${HEADERS[Status]}" == "20"* ]]; then ISOK=1; else ISOK=0; fi
+  if [[ "${HEADERS[Status]}" == "20"* ]]; then ISOK=1 RET=0; else ISOK=0 RET=1; fi
   if [[ $ISOK -eq 0 ]] && [[ "$1" != *"--head"* ]]; then error "$BODY" 1; fi
+  return $RET
+}
+
+# http response header
+header() {
+  val=${HEADERS[$1]} low=$(echo $1 | tr '[:upper:]' '[:lower:]')
+  [[ "" = "$val" ]] && val=${HEADERS[$low]}
+  echo $val
 }
 
 # show spinner and mark its pid
@@ -155,7 +164,7 @@ on-exit()
   rm -f $FILE.part $HEADER0 $HEADER
   [[ $OFFSET ]] || return 0
 
-  OFFSET=${HEADERS[Upload-Offset]:-0}  LEFTOVER=$((SIZE - OFFSET))
+  OFFSET=$(header "Upload-Offset")  LEFTOVER=$((SIZE - OFFSET))
   if [[ $LEFTOVER -eq 0 ]]; then
     ok "✔ Uploaded successfully!"
   else
@@ -213,15 +222,16 @@ TUSURL=`tus-config ".[\"$KEY\"].location?"`
 [[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; [[ $LOCATE ]] && exit $?
 [[ $TUSURL ]] && [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
+FILEPART=$FILE
 if [[ "null" != "$TUSURL" ]] && [[ $ISOK -eq 1 ]]; then
-  OFFSET=${HEADERS[Upload-Offset]} LEFTOVER=$((SIZE - OFFSET))
+  OFFSET=$(header "Upload-Offset") LEFTOVER=$((SIZE - OFFSET))
   [[ $LEFTOVER -eq 0 ]] && exit 0
-  [[ $DEBUG ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
-  spinner && FILEPART=`filepart $OFFSET $LEFTOVER $FILE` && no-spinner
+  [[ $OFFSET -gt 0 && $DEBUG ]] && comment "> filepart $OFFSET $LEFTOVER $FILE"
+  [[ $OFFSET -gt 0 ]] && spinner && FILEPART=`filepart $OFFSET $LEFTOVER $FILE` && no-spinner
 
 # create request
 else
-  OFFSET=0 LEFTOVER=$SIZE FILEPART=$FILE
+  OFFSET=0 LEFTOVER=$SIZE
   META="filename $(echo -n $NAME | base64 -w 0)"
   [[ $CREDS ]] && META="$META,user $(echo -n $USER | base64 -w 0)"
   request "-H 'Upload-Length: $SIZE' \
@@ -231,9 +241,12 @@ else
     -X POST $HOST${BASEPATH:-/files/}"
 
   # save location config
-  TUSURL=${HEADERS[Location]}
+  TUSURL=$(header "Location")
   [[ $TUSURL ]] && tus-config ".[\"$KEY\"].location" "$TUSURL"
 fi
+
+# show spinner
+spinner
 
 # patch request
 request "-H 'Content-Type: application/offset+octet-stream' \
@@ -242,13 +255,11 @@ request "-H 'Content-Type: application/offset+octet-stream' \
   -H 'Upload-Offset: $OFFSET' \
   -H 'Transfer-Encoding: chunked' \
   --upload-file '$FILEPART' \
-  --request PATCH $TUSURL" &
+  --request PATCH '$TUSURL'" || error "Request failed" 1
 
-# show spinner
-spinner
 HEADER0=$HEADER HEADER=`mktemp -t tus.XXXXXXXXXX`
 while :; do
-  [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] && exit
+  [[ $(header "Upload-Offset") -eq $SIZE ]] && exit
   request "--head $TUSURL" > /dev/null
-  [[ ${HEADERS[Upload-Offset]} -eq $SIZE ]] || sleep 2
+  [[ $(header "Upload-Offset") -eq $SIZE ]] || sleep 2
 done
