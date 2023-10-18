@@ -1,0 +1,47 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install
+      run: |
+        set -e
+
+        echo "Installing ..."
+        sudo apt-get install -y jq
+        wget https://github.com/tus/tusd/releases/download/v1.0.0/tusd_linux_amd64.tar.gz
+        tar xzf tusd_linux_amd64.tar.gz
+
+        echo "Configuring ..."
+        chmod +x ./tusc.sh && bash -n ./tusc.sh
+        chmod +x ./tusd_linux_amd64/tusd
+        touch ~/.tus.dbg
+
+    - name: Test
+      run: |
+        set -e
+
+        echo "Running tusd ..."
+        ./tusd_linux_amd64/tusd --upload-dir ~/.tusd-data --base-path /tus/ > /dev/null 2>&1 &
+
+        echo "Uploading ..."
+        DEBUG=1 ./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/
+
+        echo "Downloading ..."
+        URL=$(./tusc.sh -H 0:1080 -f tusd_linux_amd64.tar.gz -a sha256 -b /tus/ -L -C -S | cut -c 6-999)
+        wget $URL -O tusd_linux_amd64.tar.gz1
+
+        echo "Validating ..."
+        [[ "$(md5sum tusd_linux_amd64.tar.gz1)" == "$(md5sum tusd_linux_amd64.tar.gz)1" ]] || exit 1
+
+        echo "Cleaning up ..."
+        cat ~/.tus.json | jq
+        rm -rf ~/.tus.dbg ~/.tus.json
