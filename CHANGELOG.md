@@ -1,3 +1,18 @@
+## [1.1.0](https://github.com/adhocore/tusc.sh/releases/tag/1.1.0) (2023-10-18)
+
+### Features
+- Extract header() for case insensitive header lookup, pass -v to curl if DEBUG (Jitendra A) [_c60c8d4_](https://github.com/adhocore/tusc.sh/commit/c60c8d4)
+
+### Bug Fixes
+- **Tusc**: Location header may not present (Jitendra A) [_4e3406d_](https://github.com/adhocore/tusc.sh/commit/4e3406d)
+
+### Documentations
+- Add usage instruction with tusd v2 (Jitendra A) [_8d14877_](https://github.com/adhocore/tusc.sh/commit/8d14877)
+
+### Builds
+- Add gh action (Jitendra A) [_7d008f5_](https://github.com/adhocore/tusc.sh/commit/7d008f5)
+
+
 ## [1.0.2](https://github.com/adhocore/tusc.sh/releases/tag/1.0.2) (2023-10-17)
 
 ### Miscellaneous
