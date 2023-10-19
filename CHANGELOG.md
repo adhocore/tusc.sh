@@ -1,3 +1,12 @@
+## [1.1.1](https://github.com/adhocore/tusc.sh/releases/tag/1.1.1) (2023-10-19)
+
+### Bug Fixes
+- Extract locate() helper, namespace location with host (Jitendra A) [_59b80ac_](https://github.com/adhocore/tusc.sh/commit/59b80ac)
+
+### Miscellaneous
+- Cleanup debug code (Jitendra A) [_4885cc6_](https://github.com/adhocore/tusc.sh/commit/4885cc6)
+
+
 ## [1.1.0](https://github.com/adhocore/tusc.sh/releases/tag/1.1.0) (2023-10-18)
 
 ### Features
