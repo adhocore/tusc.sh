@@ -43,7 +43,7 @@ update()
 usage()
 {
   cat << USAGE
-  $TUSC $(info `version`) | $(ok "(c) Jitendra Adhikari")
+  $TUSC $(info `version`) | $(ok "(c) Jitendra Adhikari") | https://github.com/adhocore
   $TUSC is bash implementation of tus-client (https://tus.io).
 
   $(ok Usage:)
@@ -93,6 +93,15 @@ tus-config() # $1 = key, $2 = value
   fi
 }
 
+locate() # $1 = HOST, $2 = key
+{
+  loc=$(tus-config ".[\"$2\"].\"loc$1\"") lloc=""
+  echo "loc=$loc | host=$1/"
+  [[ "$loc" == "null" ]] && lloc=$(tus-config ".[\"$2\"].location?") \
+    && [[ $lloc == *"$1/"* ]] && loc=$lloc && tus-config ".[\"$2\"].\"loc$1\"" "$loc"
+  echo $loc
+}
+
 # create a part of file
 filepart() # $1 = start_byte, $2 = byte_length, $3 = file
 {
@@ -123,7 +132,8 @@ request()
 }
 
 # http response header
-header() {
+header() # $1 = key
+{
   val=${HEADERS[$1]} low=$(echo $1 | tr '[:upper:]' '[:lower:]')
   [[ "" = "$val" ]] && val=${HEADERS[$low]}
   echo $val
@@ -218,7 +228,7 @@ CHKSUM="$SUMALGO $(echo -n $KEY | base64 -w 0)"
 [[ $DEBUG ]] && info "HOST  : $HOST\nHEADER: $HEADER\nFILE  : $NAME\nSIZE  : $SIZE\nKEY   : $KEY\nCHKSUM: $CHKSUM"
 
 # head request
-TUSURL=`tus-config ".[\"$KEY\"].location?"`
+TUSURL=$(locate "$HOST" "$KEY")
 [[ $LOCATE ]] && info "URL: $TUSURL" && [[ $TUSURL != "null" ]]; [[ $LOCATE ]] && exit $?
 [[ $TUSURL ]] && [[ "null" != "$TUSURL" ]] && request "--head $TUSURL"
 
@@ -242,7 +252,7 @@ else
 
   # save location config
   TUSURL=$(header "Location")
-  [[ $TUSURL ]] && tus-config ".[\"$KEY\"].location" "$TUSURL"
+  [[ $TUSURL ]] && tus-config ".[\"$KEY\"].\"loc$HOST\"" "$TUSURL"
 fi
 
 # show spinner
