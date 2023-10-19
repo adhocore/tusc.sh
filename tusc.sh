@@ -96,7 +96,6 @@ tus-config() # $1 = key, $2 = value
 locate() # $1 = HOST, $2 = key
 {
   loc=$(tus-config ".[\"$2\"].\"loc$1\"") lloc=""
-  echo "loc=$loc | host=$1/"
   [[ "$loc" == "null" ]] && lloc=$(tus-config ".[\"$2\"].location?") \
     && [[ $lloc == *"$1/"* ]] && loc=$lloc && tus-config ".[\"$2\"].\"loc$1\"" "$loc"
   echo $loc
